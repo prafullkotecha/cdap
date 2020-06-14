@@ -167,14 +167,20 @@ class SchemaTreeBase implements ISchemaTree {
       fieldId.id
     );
     tree.children.order = order;
-    tree.children[id] = {
+    const newlyAddedField = {
       id,
       internalType: 'enum-symbol',
       typeProperties: {
         symbol: '',
       },
     };
-    return { tree, newTree: tree.children[id], currentField: tree.children[fieldId.id] };
+    tree.children[id] = newlyAddedField;
+    return {
+      tree,
+      newTree: tree.children[id],
+      currentField: tree.children[fieldId.id],
+      newlyAddedField,
+    };
   };
 
   private addNewFieldType = (tree: INode, fieldId: IFieldIdentifier) => {
@@ -186,14 +192,20 @@ class SchemaTreeBase implements ISchemaTree {
       fieldId.id
     );
     tree.children.order = order;
-    tree.children[id] = {
+    const newlyAddedField = {
       id,
       internalType: 'record-field-simple-type',
       nullable: false,
       type: 'string',
       name: '',
     };
-    return { tree, newTree: tree.children[id], currentField: tree.children[fieldId.id] };
+    tree.children[id] = newlyAddedField;
+    return {
+      tree,
+      newTree: tree.children[id],
+      currentField: tree.children[fieldId.id],
+      newlyAddedField,
+    };
   };
 
   private addNewUnionType = (tree: INode, fieldId: IFieldIdentifier) => {
@@ -205,13 +217,19 @@ class SchemaTreeBase implements ISchemaTree {
       fieldId.id
     );
     tree.children.order = order;
-    tree.children[id] = {
+    const newlyAddedField = {
       id,
       internalType: 'union-simple-type',
       nullable: false,
       type: 'string',
     };
-    return { tree, newTree: tree.children[id], currentField: tree.children[fieldId.id] };
+    tree.children[id] = newlyAddedField;
+    return {
+      tree,
+      newTree: tree.children[id],
+      currentField: tree.children[fieldId.id],
+      newlyAddedField,
+    };
   };
 
   private addSpecificTypesToTree = (tree: INode, fieldId: IFieldIdentifier) => {
@@ -264,13 +282,22 @@ class SchemaTreeBase implements ISchemaTree {
     }
     if (fieldId.ancestors.length === 1) {
       const field = { ...tree.children[fieldId.id] };
-      delete tree.children[fieldId.id];
-      if (Array.isArray(tree.children.order)) {
-        tree.children.order = tree.children.order.filter((id) => id === fieldId.id);
+      let newField;
+      if (Array.isArray(tree.children.order) && Object.keys(tree.children).length === 2) {
+        const {
+          tree: treeWithDefaultChild,
+          newlyAddedField: defaultNewField,
+        } = this.addSpecificTypesToTree(tree, fieldId);
+        newField = defaultNewField;
+        tree = treeWithDefaultChild;
       }
-      return { tree, removedField: field };
+      if (Array.isArray(tree.children.order)) {
+        tree.children.order = tree.children.order.filter((id) => id !== fieldId.id);
+      }
+      delete tree.children[fieldId.id];
+      return { tree, removedField: field, newlyAddedField: newField };
     }
-    const { tree: newTree, removedField } = this.removeFromTree(
+    const { tree: newTree, removedField, newlyAddedField } = this.removeFromTree(
       tree.children[fieldId.ancestors[1]],
       { id: fieldId.id, ancestors: fieldId.ancestors.slice(1) }
     );
@@ -283,17 +310,23 @@ class SchemaTreeBase implements ISchemaTree {
         },
       },
       removedField,
+      newlyAddedField,
     };
   };
 
   private remove = (currentIndex: number) => {
     const matchingEntry = this.flatTree[currentIndex];
     const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
-    const { tree, removedField } = this.removeFromTree(this.schemaTree, idObj);
+    const { tree, removedField, newlyAddedField } = this.removeFromTree(this.schemaTree, idObj);
     this.schemaTree = tree;
     const childrenInBranch = branchCount(removedField);
+    let newFlatSubTree = [];
+    if (newlyAddedField) {
+      newFlatSubTree = FlatSchema(newlyAddedField, matchingEntry.ancestors);
+    }
     this.flatTree = [
       ...this.flatTree.slice(0, currentIndex),
+      ...newFlatSubTree,
       ...this.flatTree.slice(currentIndex + 1 + childrenInBranch),
     ];
   };
