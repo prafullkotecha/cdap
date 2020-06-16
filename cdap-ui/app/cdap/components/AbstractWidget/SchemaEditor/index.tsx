@@ -44,7 +44,6 @@ const styles = (theme): StyleRules => {
       '& >div': {
         padding: '2px 10px',
         display: 'grid',
-        minHeight: '36px',
         marginTop: '2px',
       },
     },
