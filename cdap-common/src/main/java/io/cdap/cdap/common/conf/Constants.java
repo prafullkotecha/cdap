@@ -349,6 +349,7 @@ public final class Constants {
     public static final String WORKER_THREADS = "preview.worker.threads";
 
     public static final String PREVIEW_CACHE_SIZE = "preview.cache.size";
+    public static final String WAITING_QUEUE_CAPACITY = "preview.waiting.queue.capacity";
   }
 
   /**
