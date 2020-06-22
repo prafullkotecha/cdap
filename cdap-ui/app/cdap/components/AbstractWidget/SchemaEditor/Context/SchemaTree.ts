@@ -329,6 +329,7 @@ class SchemaTreeBase implements ISchemaTree {
       ...newFlatSubTree,
       ...this.flatTree.slice(currentIndex + 1 + childrenInBranch),
     ];
+    return currentIndex;
   };
 
   private updateTree = (
@@ -399,6 +400,19 @@ class SchemaTreeBase implements ISchemaTree {
         ...this.flatTree.slice(currentIndex),
       ];
     }
+    // newFlatSubTree will be of length 1 for simple type changes.
+    if (Array.isArray(newFlatSubTree) && newFlatSubTree.length > 1) {
+      // to focus on first field in the record. When we set a record
+      // type to a field we add 'record-field-complex-type-root' and 'schema' and then the
+      // first row.
+      if (result.newTree.type === 'record') {
+        return currentIndex + 2;
+      } else {
+        // For rest of the complex types it is the first new row
+        return currentIndex + 1;
+      }
+    }
+    return;
   };
 
   private add = (currentIndex) => {
@@ -415,6 +429,7 @@ class SchemaTreeBase implements ISchemaTree {
       ...newFlatSubTree,
       ...this.flatTree.slice(currentIndex + currentFieldBranchCount + 1),
     ];
+    return currentIndex + currentFieldBranchCount + 1;
   };
 
   public onChange = (
@@ -427,14 +442,11 @@ class SchemaTreeBase implements ISchemaTree {
     }
     switch (type) {
       case 'update':
-        this.update(currentIndex, { property, value });
-        break;
+        return this.update(currentIndex, { property, value });
       case 'add':
-        this.add(currentIndex);
-        break;
+        return this.add(currentIndex);
       case 'remove':
-        this.remove(currentIndex);
-        break;
+        return this.remove(currentIndex);
     }
   };
 }

@@ -63,7 +63,9 @@ interface ISelectWidgetProps {
   inline?: boolean;
 }
 
-interface ISelectProps extends IWidgetProps<ISelectWidgetProps> {}
+interface ISelectProps extends IWidgetProps<ISelectWidgetProps> {
+  inputRef?: (ref: React.ReactNode) => void;
+}
 
 const CustomSelect: React.FC<ISelectProps> = ({
   value,
@@ -71,6 +73,7 @@ const CustomSelect: React.FC<ISelectProps> = ({
   widgetProps,
   disabled,
   dataCy,
+  inputRef,
 }: ISelectProps) => {
   const onChangeHandler = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const v = event.target.value;
@@ -105,6 +108,7 @@ const CustomSelect: React.FC<ISelectProps> = ({
           horizontal: 'left',
         },
       }}
+      inputRef={inputRef}
     >
       {optionValues.map((opt) => (
         <OptionItem value={opt.value} key={opt.value}>

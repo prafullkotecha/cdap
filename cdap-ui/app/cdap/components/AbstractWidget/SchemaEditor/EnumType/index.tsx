@@ -19,7 +19,6 @@ import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldType/F
 import TextBox from 'components/AbstractWidget/FormInputs/TextBox';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
-import { defaultEnumType } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 
 const EnumTypeBase = ({
   ancestorsCount,
@@ -27,9 +26,18 @@ const EnumTypeBase = ({
   onChange,
   onAdd,
   onRemove,
+  autoFocus,
 }: IFieldTypeBaseProps) => {
   const { symbol } = typeProperties;
   const [enumSymbol, setEnumSymbol] = React.useState(symbol);
+  const inputEle = React.useRef(null);
+  React.useEffect(() => {
+    if (autoFocus) {
+      if (inputEle.current) {
+        inputEle.current.focus();
+      }
+    }
+  }, [autoFocus]);
   return (
     <FieldWrapper ancestorsCount={ancestorsCount}>
       <TextBox
@@ -41,6 +49,7 @@ const EnumTypeBase = ({
           });
         }}
         widgetProps={{ placeholder: 'symbol' }}
+        inputRef={(ref) => (inputEle.current = ref)}
       />
       <RowButtons onRemove={onRemove} onAdd={onAdd} />
     </FieldWrapper>

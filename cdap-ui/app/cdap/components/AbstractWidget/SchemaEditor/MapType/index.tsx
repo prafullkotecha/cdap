@@ -42,6 +42,7 @@ const MapTypeBase = ({
   type,
   nullable,
   onChange,
+  autoFocus,
 }: IFieldTypeBaseProps) => {
   let label = '';
   if (['map-keys-complex-type-root', 'map-keys-simple-type'].indexOf(internalType) !== -1) {
@@ -52,6 +53,14 @@ const MapTypeBase = ({
   }
   const [fieldType, setFieldType] = React.useState(type);
   const [fieldNullable, setFieldNullable] = React.useState(nullable);
+  const inputEle = React.useRef(null);
+  React.useEffect(() => {
+    if (autoFocus) {
+      if (inputEle.current) {
+        inputEle.current.focus();
+      }
+    }
+  }, [autoFocus]);
   return (
     <FieldWrapper ancestorsCount={ancestorsCount}>
       <MapWrapper>
@@ -63,6 +72,7 @@ const MapTypeBase = ({
             onChange('type', newValue);
           }}
           widgetProps={{ options: schemaTypes, dense: true, inline: true }}
+          inputRef={(ref) => (inputEle.current = ref)}
         />
       </MapWrapper>
       <RowButtons

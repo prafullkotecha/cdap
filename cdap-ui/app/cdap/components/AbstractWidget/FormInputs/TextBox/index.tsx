@@ -26,6 +26,7 @@ interface ITextBoxWidgetProps {
 
 interface ITextBoxProps extends IWidgetProps<ITextBoxWidgetProps> {
   autoFocus?: boolean;
+  inputRef?: (ref: React.ReactNode) => void;
 }
 
 const TextBox: React.FC<ITextBoxProps> = ({
@@ -35,6 +36,8 @@ const TextBox: React.FC<ITextBoxProps> = ({
   disabled,
   dataCy,
   autoFocus,
+  inputRef,
+  onKeyPress,
 }) => {
   const onChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
     const v = event.target.value;
@@ -49,12 +52,14 @@ const TextBox: React.FC<ITextBoxProps> = ({
       fullWidth
       value={value}
       onChange={onChangeHandler}
+      onKeyPress={onKeyPress}
       placeholder={placeholder}
       readOnly={disabled}
       inputProps={{
         'data-cy': dataCy,
       }}
       autoFocus={autoFocus}
+      inputRef={inputRef}
     />
   );
 };

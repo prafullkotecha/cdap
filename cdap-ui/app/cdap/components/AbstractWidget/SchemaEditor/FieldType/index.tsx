@@ -21,10 +21,7 @@ import {
 } from 'components/AbstractWidget/SchemaEditor/FieldType/FieldWrapper';
 import TextBox from 'components/AbstractWidget/FormInputs/TextBox';
 import Select from 'components/AbstractWidget/FormInputs/Select';
-import {
-  schemaTypes,
-  defaultFieldType,
-} from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
+import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 
@@ -41,6 +38,15 @@ const FieldTypeBase = ({
   const [fieldName, setFieldName] = React.useState(name);
   const [fieldType, setFieldType] = React.useState(type);
   const [fieldNullable, setFieldNullable] = React.useState(nullable);
+  const inputEle = React.useRef(null);
+  React.useEffect(() => {
+    if (autoFocus) {
+      if (inputEle.current) {
+        inputEle.current.focus();
+        inputEle.current.select();
+      }
+    }
+  }, [autoFocus]);
   return (
     <FieldWrapper ancestorsCount={ancestorsCount}>
       <FieldInputWrapper>
@@ -49,9 +55,17 @@ const FieldTypeBase = ({
             setFieldName(newValue);
             onChange('name', newValue);
           }}
+          onKeyPress={(event: React.KeyboardEvent) => {
+            if (event.nativeEvent.keyCode === 13) {
+              onAdd();
+            }
+          }}
           widgetProps={{ placeholder: 'name' }}
           value={fieldName}
           autoFocus={autoFocus}
+          inputRef={(ref) => {
+            inputEle.current = ref;
+          }}
         />
         <Select
           value={fieldType}

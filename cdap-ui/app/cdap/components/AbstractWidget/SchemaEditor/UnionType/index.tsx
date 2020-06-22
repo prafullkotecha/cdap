@@ -16,10 +16,7 @@
 
 import * as React from 'react';
 import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldType/FieldWrapper';
-import {
-  schemaTypes,
-  defaultUnionType,
-} from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
+import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import { SingleColumnWrapper } from 'components/AbstractWidget/SchemaEditor/SingleColumnWrapper';
 import Select from 'components/AbstractWidget/FormInputs/Select';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
@@ -31,9 +28,18 @@ const UnionTypeBase = ({
   nullable,
   onChange,
   onAdd,
+  autoFocus,
 }: IFieldTypeBaseProps) => {
   const [fieldType, setFieldType] = React.useState(type);
   const [fieldNullable, setFieldNullable] = React.useState(nullable);
+  const inputEle = React.useRef(null);
+  React.useEffect(() => {
+    if (autoFocus) {
+      if (inputEle.current) {
+        inputEle.current.focus();
+      }
+    }
+  }, [autoFocus]);
   return (
     <FieldWrapper ancestorsCount={ancestorsCount}>
       <SingleColumnWrapper>
@@ -44,6 +50,7 @@ const UnionTypeBase = ({
             onChange('type', newValue);
           }}
           widgetProps={{ options: schemaTypes, dense: true }}
+          inputRef={(ref) => (inputEle.current = ref)}
         />
       </SingleColumnWrapper>
       <RowButtons

@@ -39,6 +39,7 @@ export interface IWidgetProps<T = any> {
   widgetProps?: T;
   value: string | number;
   onChange: (value) => void | React.Dispatch<any>;
+  onKeyPress?: (event: React.KeyboardEvent) => void;
   updateAllProperties?: (values: Record<string, string>) => void | React.Dispatch<any>;
   extraConfig?: {
     namespace?: string;

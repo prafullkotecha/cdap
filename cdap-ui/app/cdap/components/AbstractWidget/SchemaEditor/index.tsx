@@ -85,7 +85,7 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
     fieldId: IFieldIdentifier,
     onChangePayload: IOnChangePayload
   ) => {
-    this.schema.onChange(fieldId, index, onChangePayload);
+    const updatedIndex = this.schema.onChange(fieldId, index, onChangePayload);
     const newFlat = this.schema
       .getFlatSchema()
       .map((row) => row.id)
@@ -98,6 +98,7 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
       });
     }
     this.props.onChange({ tree: this.schema.getSchemaTree(), flat: this.schema.getFlatSchema() });
+    return updatedIndex;
   };
   public render() {
     const { flat } = this.state;

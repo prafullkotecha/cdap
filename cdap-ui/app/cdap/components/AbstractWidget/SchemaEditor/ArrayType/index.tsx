@@ -22,9 +22,23 @@ import Select from 'components/AbstractWidget/FormInputs/Select';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 
-const ArrayType = ({ ancestorsCount, type, nullable, onChange }: IFieldTypeBaseProps) => {
+const ArrayType = ({
+  ancestorsCount,
+  type,
+  nullable,
+  onChange,
+  autoFocus,
+}: IFieldTypeBaseProps) => {
   const [fieldType, setFieldType] = React.useState(type);
   const [fieldNullable, setFieldNullable] = React.useState(nullable);
+  const inputEle = React.useRef(null);
+  React.useEffect(() => {
+    if (autoFocus) {
+      if (inputEle.current) {
+        inputEle.current.focus();
+      }
+    }
+  }, [autoFocus]);
   return (
     <FieldWrapper ancestorsCount={ancestorsCount}>
       <SingleColumnWrapper>
@@ -35,6 +49,7 @@ const ArrayType = ({ ancestorsCount, type, nullable, onChange }: IFieldTypeBaseP
             onChange('type', newValue);
           }}
           widgetProps={{ options: schemaTypes, dense: true }}
+          inputRef={(ref) => (inputEle.current = ref)}
         />
       </SingleColumnWrapper>
       <RowButtons

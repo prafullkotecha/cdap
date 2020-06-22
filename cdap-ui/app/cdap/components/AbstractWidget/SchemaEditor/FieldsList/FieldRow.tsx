@@ -129,6 +129,7 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
             onChange={this.onChange}
             onAdd={this.onAdd}
             onRemove={this.onRemove}
+            autoFocus={this.props.autoFocus}
           />
         );
       case 'enum-symbol':
@@ -139,6 +140,7 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
             onChange={this.onChange}
             onAdd={this.onAdd}
             onRemove={this.onRemove}
+            autoFocus={this.props.autoFocus}
           />
         );
       case 'map-keys-complex-type-root':
@@ -154,6 +156,7 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
             onChange={this.onChange}
             onAdd={this.onAdd}
             onRemove={this.onRemove}
+            autoFocus={this.props.autoFocus}
           />
         );
       case 'union-simple-type':
@@ -166,6 +169,7 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
             onChange={this.onChange}
             onAdd={this.onAdd}
             onRemove={this.onRemove}
+            autoFocus={this.props.autoFocus}
           />
         );
       default:

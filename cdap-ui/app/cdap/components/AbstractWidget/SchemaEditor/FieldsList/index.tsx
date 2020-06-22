@@ -29,7 +29,11 @@ interface IFieldsListState {
 
 interface IFieldsListProps {
   value: IFlattenRowType[];
-  onChange: (index: number, id: IFieldIdentifier, onChangePayload: IOnChangePayload) => void;
+  onChange: (
+    index: number,
+    id: IFieldIdentifier,
+    onChangePayload: IOnChangePayload
+  ) => number | void;
 }
 
 export class FieldsList extends React.Component<IFieldsListProps, IFieldsListState> {
@@ -48,15 +52,12 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
   }
 
   public onChange = (index: number, field: IFieldIdentifier, onChangePayload: IOnChangePayload) => {
-    switch (onChangePayload.type) {
-      case 'add':
-        this.setState({ currentRowToFocus: index + 1 });
-        break;
-      case 'remove':
-        this.setState({ currentRowToFocus: index });
-        break;
+    const updatedIndex = this.props.onChange(index, field, onChangePayload);
+    if (typeof updatedIndex === 'number') {
+      this.setState({
+        currentRowToFocus: updatedIndex,
+      });
     }
-    this.props.onChange(index, field, onChangePayload);
   };
 
   public render() {
