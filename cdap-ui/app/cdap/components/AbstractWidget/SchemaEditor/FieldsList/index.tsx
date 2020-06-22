@@ -24,6 +24,7 @@ import { FieldRow } from 'components/AbstractWidget/SchemaEditor/FieldsList/Fiel
 
 interface IFieldsListState {
   rows: IFlattenRowType[];
+  currentRowToFocus: number;
 }
 
 interface IFieldsListProps {
@@ -34,6 +35,7 @@ interface IFieldsListProps {
 export class FieldsList extends React.Component<IFieldsListProps, IFieldsListState> {
   public state: IFieldsListState = {
     rows: this.props.value || [],
+    currentRowToFocus: 0,
   };
   public componentWillReceiveProps(nextProps: IFieldsListProps) {
     const ids = nextProps.value.map((r) => r.id).join(',');
@@ -45,9 +47,26 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
     }
   }
 
+  public onChange = (index: number, field: IFieldIdentifier, onChangePayload: IOnChangePayload) => {
+    switch (onChangePayload.type) {
+      case 'add':
+        this.setState({ currentRowToFocus: index + 1 });
+        break;
+      case 'remove':
+        this.setState({ currentRowToFocus: index });
+        break;
+    }
+    this.props.onChange(index, field, onChangePayload);
+  };
+
   public render() {
     return this.state.rows.map((field, i) => (
-      <FieldRow key={field.id} field={field} onChange={this.props.onChange.bind(null, i)} />
+      <FieldRow
+        autoFocus={this.state.currentRowToFocus === i}
+        key={field.id}
+        field={field}
+        onChange={this.onChange.bind(null, i)}
+      />
     ));
   }
 }

@@ -37,6 +37,7 @@ interface IFieldRowState {
 interface IFieldRowProps {
   field: IFlattenRowType;
   onChange: (id: IFieldIdentifier, payload: IOnChangePayload) => void;
+  autoFocus?: boolean;
 }
 
 class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
@@ -114,6 +115,7 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
             onChange={this.onChange}
             onAdd={this.onAdd}
             onRemove={this.onRemove}
+            autoFocus={this.props.autoFocus}
           />
         );
       case 'array-simple-type':

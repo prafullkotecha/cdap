@@ -36,6 +36,7 @@ const FieldTypeBase = ({
   onChange,
   onAdd,
   onRemove,
+  autoFocus,
 }: IFieldTypeBaseProps) => {
   const [fieldName, setFieldName] = React.useState(name);
   const [fieldType, setFieldType] = React.useState(type);
@@ -50,6 +51,7 @@ const FieldTypeBase = ({
           }}
           widgetProps={{ placeholder: 'name' }}
           value={fieldName}
+          autoFocus={autoFocus}
         />
         <Select
           value={fieldType}
