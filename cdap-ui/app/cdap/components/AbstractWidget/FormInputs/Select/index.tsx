@@ -21,13 +21,14 @@ import { IWidgetProps } from 'components/AbstractWidget';
 import { objectQuery } from 'services/helpers';
 import { WIDGET_PROPTYPES } from 'components/AbstractWidget/constants';
 import withStyles from '@material-ui/core/styles/withStyles';
-
+import { blue } from 'components/ThemeWrapper/colors';
 const CustomizedInput = withStyles(() => {
   return {
     input: {
       padding: '7px 18px 7px 12px',
       '&:focus': {
         backgroundColor: 'transparent',
+        outline: `1px solid ${blue[100]}`,
       },
     },
   };

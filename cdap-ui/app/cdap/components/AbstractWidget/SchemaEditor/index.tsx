@@ -45,6 +45,7 @@ const styles = (theme): StyleRules => {
         padding: '2px 10px',
         display: 'grid',
         marginTop: '2px',
+        gridTemplateRows: '28px',
       },
     },
   };
