@@ -28,7 +28,6 @@ interface IFieldWrapperProps {
 }
 const FieldWrapperBase = ({ ancestorsCount = 0, children, style = {} }: IFieldWrapperProps) => {
   const spacing = ancestorsCount * INDENTATION_SPACING;
-  const spacingWithLeftMargin = spacing + 10;
   const spacingMinusLeftMargin = spacing - 10;
   const firstColumn = `calc(100% - 75px)`;
   const secondColumn = `75px`;

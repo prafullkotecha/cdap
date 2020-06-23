@@ -236,7 +236,7 @@ class SchemaTreeBase implements ISchemaTree {
     switch (tree.type) {
       case 'enum':
         return this.addNewEnumSymbol(tree, fieldId);
-      case 'schema':
+      case 'record':
         return this.addNewFieldType(tree, fieldId);
       case 'union':
         return this.addNewUnionType(tree, fieldId);
@@ -402,17 +402,8 @@ class SchemaTreeBase implements ISchemaTree {
     }
     // newFlatSubTree will be of length 1 for simple type changes.
     if (Array.isArray(newFlatSubTree) && newFlatSubTree.length > 1) {
-      // to focus on first field in the record. When we set a record
-      // type to a field we add 'record-field-complex-type-root' and 'schema' and then the
-      // first row.
-      if (result.newTree.type === 'record') {
-        return currentIndex + 2;
-      } else {
-        // For rest of the complex types it is the first new row
-        return currentIndex + 1;
-      }
+      return currentIndex + 1;
     }
-    return;
   };
 
   private add = (currentIndex) => {

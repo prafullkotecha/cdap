@@ -157,6 +157,19 @@ function parseMapType(type): IOrderedChildren {
   return result;
 }
 
+function parseRecordType(type): IOrderedChildren {
+  const t = getNonNullableType(type);
+  const result = {
+    order: [],
+  };
+  for (const field of t.fields) {
+    const child = parseSubTree(field);
+    result.order.push(child.id);
+    result[child.id] = child;
+  }
+  return result;
+}
+
 function parseComplexType(type): IOrderedChildren {
   const complexTypeName = getComplexTypeName(type);
   let record: IOrderedChildren = {};
@@ -168,9 +181,7 @@ function parseComplexType(type): IOrderedChildren {
       record = parseArrayType(type);
       break;
     case 'record': {
-      const schema: ISchemaType = { name: 'etlSchemaBody', schema: getNonNullableType(type) };
-      const parsedSchema = parseSchema(schema);
-      record[parsedSchema.id] = parsedSchema;
+      record = parseRecordType(type);
       break;
     }
     case 'union':
