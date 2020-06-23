@@ -265,7 +265,7 @@ function parseSchema(avroSchema: ISchemaType, name = 'etlSchemaBody'): INode {
   const root: INode = {
     name,
     internalType: 'schema',
-    type: 'schema',
+    type: 'record',
     id: uuidV4(),
     children: {
       order: [],

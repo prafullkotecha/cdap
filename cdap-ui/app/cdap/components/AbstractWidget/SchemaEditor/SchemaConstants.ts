@@ -88,7 +88,7 @@ const logicalTypeToSimpleTypeMap = {
   decimal: 'decimal',
 };
 
-const INDENTATION_SPACING = 10;
+const INDENTATION_SPACING = 15;
 
 export {
   schemaTypes,

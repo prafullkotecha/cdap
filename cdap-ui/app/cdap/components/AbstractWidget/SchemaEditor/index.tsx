@@ -15,7 +15,7 @@
  */
 
 import * as React from 'react';
-import withStyles, { WithStyles, StyleRules } from '@material-ui/core/styles/withStyles';
+import withStyles, { WithStyles, StyleRules } from '@material-ui/styles/withStyles';
 import ThemeWrapper from 'components/ThemeWrapper';
 import {
   SchemaTree,
@@ -41,12 +41,6 @@ const styles = (theme): StyleRules => {
       width: 'auto',
       height: 'auto',
       maxWidth: '500px',
-      '& >div': {
-        padding: '2px 10px',
-        display: 'grid',
-        marginTop: '2px',
-        gridTemplateRows: '28px',
-      },
     },
   };
 };
