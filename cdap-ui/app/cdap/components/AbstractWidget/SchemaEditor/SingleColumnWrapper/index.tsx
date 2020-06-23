@@ -20,7 +20,7 @@ import Box from '@material-ui/core/Box';
 const SingleColumnWrapper = withStyles(() => {
   return {
     root: {
-      width: '162px', // 50 + 100 + 10 from the mapwrapper
+      width: '132px', // 50 + 100 + 10 from the mapwrapper
       marginLeft: '-12px',
     },
   };
