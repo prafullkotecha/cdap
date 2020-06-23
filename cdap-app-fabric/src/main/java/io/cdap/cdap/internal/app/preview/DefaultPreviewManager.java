@@ -126,6 +126,9 @@ public class DefaultPreviewManager extends AbstractIdleService implements Previe
     if (runner instanceof Service) {
       ((Service) runner).startAndWait();
     }
+
+    PreviewDataSubscriberService subscriberService = previewInjector.getInstance(PreviewDataSubscriberService.class);
+    subscriberService.startAndWait();
   }
 
   @Override
@@ -134,6 +137,9 @@ public class DefaultPreviewManager extends AbstractIdleService implements Previe
     if (runner instanceof Service) {
       stopQuietly((Service) runner);
     }
+
+    PreviewDataSubscriberService subscriberService = previewInjector.getInstance(PreviewDataSubscriberService.class);
+    stopQuietly(subscriberService);
   }
 
   @Override

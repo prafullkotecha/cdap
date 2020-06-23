@@ -58,6 +58,7 @@ import io.cdap.cdap.internal.app.store.RunRecordDetail;
 import io.cdap.cdap.internal.provision.ProvisionerModule;
 import io.cdap.cdap.logging.guice.LocalLogAppenderModule;
 import io.cdap.cdap.logging.guice.LogReaderRuntimeModules;
+import io.cdap.cdap.messaging.MessagingService;
 import io.cdap.cdap.messaging.guice.MessagingServerRuntimeModule;
 import io.cdap.cdap.metadata.MetadataReaderWriterModules;
 import io.cdap.cdap.metadata.MetadataServiceModule;
@@ -197,10 +198,10 @@ public class PreviewManagerTest {
                             PrivilegesManager privilegesManager, PreferencesService preferencesService,
                             ProgramRuntimeProviderLoader programRuntimeProviderLoader,
                             PluginFinderProvider pluginFinderProvider,
-                            PreferencesFetcherProvider preferencesFetcherProvider) {
+                            PreferencesFetcherProvider preferencesFetcherProvider, MessagingService messagingService) {
       super(readerProvider, artifactStore, authorizerInstantiator, authorizationEnforcer,
             privilegesManager, preferencesService, programRuntimeProviderLoader, pluginFinderProvider,
-            preferencesFetcherProvider);
+            preferencesFetcherProvider, messagingService);
     }
 
     @Override

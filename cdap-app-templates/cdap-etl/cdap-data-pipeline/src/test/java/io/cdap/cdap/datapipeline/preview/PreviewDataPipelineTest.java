@@ -403,14 +403,19 @@ public class PreviewDataPipelineTest extends HydratorTestBase {
   }
 
   private void checkPreviewStore(PreviewRunner previewRunner, ApplicationId previewId, String tracerName,
-                                 int numExpectedRecords) throws NotFoundException {
-    Map<String, List<JsonElement>> result = previewRunner.getData(previewId, tracerName);
-    List<JsonElement> data = result.get(DATA_TRACER_PROPERTY);
-    if (data == null) {
-      Assert.assertEquals(numExpectedRecords, 0);
-    } else {
-      Assert.assertEquals(numExpectedRecords, data.size());
-    }
+                                 int numExpectedRecords) throws Exception {
+    Tasks.waitFor(numExpectedRecords, new Callable<Integer>() {
+      @Override
+      public Integer call() throws Exception {
+        Map<String, List<JsonElement>> result = previewRunner.getData(previewId, tracerName);
+        List<JsonElement> data = result.get(DATA_TRACER_PROPERTY);
+        if (data == null) {
+          return 0;
+        } else {
+          return data.size();
+        }
+      }
+    }, 60, TimeUnit.SECONDS);
   }
 
   private void validateMetric(long expected, ApplicationId previewId,

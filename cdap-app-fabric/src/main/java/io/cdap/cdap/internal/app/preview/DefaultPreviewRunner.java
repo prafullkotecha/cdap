@@ -25,6 +25,8 @@ import com.google.inject.Inject;
 import io.cdap.cdap.api.artifact.ArtifactSummary;
 import io.cdap.cdap.api.metrics.MetricsCollectionService;
 import io.cdap.cdap.app.preview.DataTracerFactory;
+import io.cdap.cdap.app.preview.PreviewDataPublisher;
+import io.cdap.cdap.app.preview.PreviewMessage;
 import io.cdap.cdap.app.preview.PreviewRequest;
 import io.cdap.cdap.app.preview.PreviewRunner;
 import io.cdap.cdap.app.preview.PreviewStatus;
@@ -95,6 +97,7 @@ public class DefaultPreviewRunner extends AbstractIdleService implements Preview
   private final ApplicationLifecycleService applicationLifecycleService;
   private final ProgramRuntimeService programRuntimeService;
   private final ProgramLifecycleService programLifecycleService;
+  private final PreviewDataPublisher previewDataPublisher;
   private final PreviewStore previewStore;
   private final DataTracerFactory dataTracerFactory;
   private final NamespaceAdmin namespaceAdmin;
@@ -113,7 +116,8 @@ public class DefaultPreviewRunner extends AbstractIdleService implements Preview
                        ApplicationLifecycleService applicationLifecycleService,
                        ProgramRuntimeService programRuntimeService,
                        ProgramLifecycleService programLifecycleService,
-                       PreviewStore previewStore, DataTracerFactory dataTracerFactory,
+                       PreviewDataPublisher previewDataPublisher, PreviewStore previewStore,
+                       DataTracerFactory dataTracerFactory,
                        NamespaceAdmin namespaceAdmin,
                        MetricsCollectionService metricsCollectionService, MetricsQueryHelper metricsQueryHelper,
                        ProgramNotificationSubscriberService programNotificationSubscriberService,
@@ -128,6 +132,7 @@ public class DefaultPreviewRunner extends AbstractIdleService implements Preview
     this.programRuntimeService = programRuntimeService;
     this.programLifecycleService = programLifecycleService;
     this.previewStore = previewStore;
+    this.previewDataPublisher = previewDataPublisher;
     this.dataTracerFactory = dataTracerFactory;
     this.namespaceAdmin = namespaceAdmin;
     this.metricsCollectionService = metricsCollectionService;
@@ -251,12 +256,16 @@ public class DefaultPreviewRunner extends AbstractIdleService implements Preview
       }
     }, Threads.SAME_THREAD_EXECUTOR);
 
-    previewStore.setProgramId(controller.getProgramRunId());
+    PreviewMessage message = new PreviewMessage(PreviewMessage.Type.PROGRAM_RUN_ID, programId.getParent(),
+                                                GSON.toJsonTree(controller.getProgramRunId()));
+    previewDataPublisher.publish(programId.getParent(), message);
   }
 
   private void setStatus(ProgramId programId, PreviewStatus previewStatus) {
     LOG.debug("Setting preview status for {} to {}", programId, previewStatus.getStatus());
-    previewStore.setPreviewStatus(programId.getParent(), previewStatus);
+    PreviewMessage message = new PreviewMessage(PreviewMessage.Type.STATUS, programId.getParent(),
+                                                GSON.toJsonTree(previewStatus));
+    previewDataPublisher.publish(programId.getParent(), message);
   }
 
   @Override
