@@ -21,6 +21,7 @@ import {
   IOnChangePayload,
 } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { FieldRow } from 'components/AbstractWidget/SchemaEditor/FieldsList/FieldRow';
+import { SiblingCommunicationProvider } from 'components/AbstractWidget/SchemaEditor/FieldWrapper/SiblingCommunicationContext';
 
 interface IFieldsListState {
   rows: IFlattenRowType[];
@@ -61,13 +62,17 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
   };
 
   public render() {
-    return this.state.rows.map((field, i) => (
-      <FieldRow
-        autoFocus={this.state.currentRowToFocus === i}
-        key={field.id}
-        field={field}
-        onChange={this.onChange.bind(null, i)}
-      />
-    ));
+    return (
+      <SiblingCommunicationProvider>
+        {this.state.rows.map((field, i) => (
+          <FieldRow
+            autoFocus={this.state.currentRowToFocus === i}
+            key={field.id}
+            field={field}
+            onChange={this.onChange.bind(null, i)}
+          />
+        ))}
+      </SiblingCommunicationProvider>
+    );
   }
 }

@@ -15,20 +15,14 @@
  */
 
 import * as React from 'react';
-import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldType/FieldWrapper';
+import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
 import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import { SingleColumnWrapper } from 'components/AbstractWidget/SchemaEditor/SingleColumnWrapper';
 import Select from 'components/AbstractWidget/FormInputs/Select';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 
-const ArrayType = ({
-  ancestorsCount,
-  type,
-  nullable,
-  onChange,
-  autoFocus,
-}: IFieldTypeBaseProps) => {
+const ArrayType = ({ ancestors, type, nullable, onChange, autoFocus }: IFieldTypeBaseProps) => {
   const [fieldType, setFieldType] = React.useState(type);
   const [fieldNullable, setFieldNullable] = React.useState(nullable);
   const inputEle = React.useRef(null);
@@ -40,7 +34,7 @@ const ArrayType = ({
     }
   }, [autoFocus]);
   return (
-    <FieldWrapper ancestorsCount={ancestorsCount}>
+    <FieldWrapper ancestors={ancestors}>
       <SingleColumnWrapper>
         <Select
           value={fieldType}

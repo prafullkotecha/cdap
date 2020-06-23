@@ -52,7 +52,7 @@ interface IFieldTypeBaseProps {
   nullable?: boolean;
   internalType?: IInternalFieldType;
   typeProperties?: Record<string, any>;
-  ancestorsCount: number;
+  ancestors: string[];
   onChange: (property: string, value?: string | boolean | Record<string, string>) => void;
   onAdd: () => void;
   onRemove: () => void;

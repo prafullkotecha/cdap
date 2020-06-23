@@ -18,7 +18,7 @@ import * as React from 'react';
 import {
   FieldWrapper,
   FieldInputWrapper,
-} from 'components/AbstractWidget/SchemaEditor/FieldType/FieldWrapper';
+} from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
 import TextBox from 'components/AbstractWidget/FormInputs/TextBox';
 import Select from 'components/AbstractWidget/FormInputs/Select';
 import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
@@ -26,7 +26,7 @@ import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/Edit
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 
 const FieldTypeBase = ({
-  ancestorsCount,
+  ancestors,
   name,
   type,
   nullable,
@@ -48,7 +48,7 @@ const FieldTypeBase = ({
     }
   }, [autoFocus]);
   return (
-    <FieldWrapper ancestorsCount={ancestorsCount}>
+    <FieldWrapper ancestors={ancestors}>
       <FieldInputWrapper>
         <TextBox
           onChange={(newValue) => {

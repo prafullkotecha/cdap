@@ -15,7 +15,7 @@
  */
 
 import * as React from 'react';
-import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldType/FieldWrapper';
+import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
 import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import { SingleColumnWrapper } from 'components/AbstractWidget/SchemaEditor/SingleColumnWrapper';
 import Select from 'components/AbstractWidget/FormInputs/Select';
@@ -23,7 +23,7 @@ import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/Edit
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 
 const UnionTypeBase = ({
-  ancestorsCount,
+  ancestors,
   type,
   nullable,
   onChange,
@@ -41,7 +41,7 @@ const UnionTypeBase = ({
     }
   }, [autoFocus]);
   return (
-    <FieldWrapper ancestorsCount={ancestorsCount}>
+    <FieldWrapper ancestors={ancestors}>
       <SingleColumnWrapper>
         <Select
           value={fieldType}

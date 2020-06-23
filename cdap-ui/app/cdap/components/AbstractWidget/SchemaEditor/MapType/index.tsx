@@ -15,7 +15,7 @@
  */
 
 import * as React from 'react';
-import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldType/FieldWrapper';
+import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
 import Select from 'components/AbstractWidget/FormInputs/Select';
 import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import Box from '@material-ui/core/Box';
@@ -37,7 +37,7 @@ const MapWrapper = withStyles(
 )(Box);
 
 const MapTypeBase = ({
-  ancestorsCount,
+  ancestors,
   internalType,
   type,
   nullable,
@@ -62,7 +62,7 @@ const MapTypeBase = ({
     }
   }, [autoFocus]);
   return (
-    <FieldWrapper ancestorsCount={ancestorsCount}>
+    <FieldWrapper ancestors={ancestors}>
       <MapWrapper>
         <span>{label}</span>
         <Select

@@ -108,7 +108,7 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
       case 'record-field-complex-type-root':
         return (
           <FieldType
-            ancestorsCount={this.props.field.ancestors.length}
+            ancestors={this.props.field.ancestors}
             name={this.props.field.name}
             type={this.props.field.type}
             nullable={this.props.field.nullable}
@@ -123,7 +123,7 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
       case 'array-complex-type-root':
         return (
           <ArrayType
-            ancestorsCount={this.props.field.ancestors.length}
+            ancestors={this.props.field.ancestors}
             type={this.props.field.type}
             nullable={this.props.field.nullable}
             onChange={this.onChange}
@@ -135,7 +135,7 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
       case 'enum-symbol':
         return (
           <EnumType
-            ancestorsCount={this.props.field.ancestors.length}
+            ancestors={this.props.field.ancestors}
             typeProperties={this.props.field.typeProperties}
             onChange={this.onChange}
             onAdd={this.onAdd}
@@ -149,7 +149,7 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
       case 'map-values-simple-type':
         return (
           <MapType
-            ancestorsCount={this.props.field.ancestors.length}
+            ancestors={this.props.field.ancestors}
             internalType={this.props.field.internalType}
             type={this.props.field.type}
             nullable={this.props.field.nullable}
@@ -163,7 +163,7 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
       case 'union-complex-type-root':
         return (
           <UnionType
-            ancestorsCount={this.props.field.ancestors.length}
+            ancestors={this.props.field.ancestors}
             type={this.props.field.type}
             nullable={this.props.field.nullable}
             onChange={this.onChange}

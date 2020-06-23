@@ -22,16 +22,20 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import { INDENTATION_SPACING } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import If from 'components/If';
+import { SiblingCommunicationConsumer } from './SiblingCommunicationContext';
+import { blue } from 'components/ThemeWrapper/colors';
+import classnames from 'classnames';
 
 interface IFieldWrapperProps {
-  ancestorsCount: number;
+  ancestors: string[];
   children?: React.ReactNode;
   style?: any;
 }
 
 const rowHeight = 28;
 const rowMarginTop = 2;
-const widthOfSiblingLines = 2;
+const widthOfSiblingLines = 10;
+const borderSizeOfSiblingLines = 2;
 
 const CustomizedPaper = withStyles(() => {
   return {
@@ -60,24 +64,58 @@ const useStyles = makeStyles({
     position: 'absolute',
     height: `${rowHeight + rowMarginTop * 2 + 2}px`,
     width: `${widthOfSiblingLines}px`,
-    background: 'rgba(0, 0, 0, 0.2)',
+    borderLeft: `${borderSizeOfSiblingLines}px solid rgba(0, 0, 0, 0.2)`,
     left: (props) => (props as any).index * -1 * INDENTATION_SPACING,
   },
   innerMostSiblingConnector: {
     '&:after': {
       position: 'absolute',
       height: '2px',
-      width: `${INDENTATION_SPACING - widthOfSiblingLines}px`,
-      left: `${widthOfSiblingLines}px`,
+      width: `${INDENTATION_SPACING - borderSizeOfSiblingLines}px`,
+      left: '0px',
       content: '""',
-      background: 'rgba(0, 0, 0, 0.2)',
+      borderTop: '2px solid rgba(0, 0, 0, 0.2)',
       top: `${rowHeight / 2}px`,
+    },
+  },
+  highlight: {
+    borderLeftColor: `${blue[300]}`,
+    '&:after': {
+      borderTopColor: `${blue[300]}`,
     },
   },
 });
 
-const FieldWrapperBase = ({ ancestorsCount = 0, children, style = {} }: IFieldWrapperProps) => {
-  const spacing = ancestorsCount * INDENTATION_SPACING;
+const SiblingLine = ({ id, index, activeParent, setActiveParent, ancestors }) => {
+  const classes = useStyles({ index: ancestors.length - 1 - index });
+  if (index + 1 === ancestors.length - 1) {
+    return (
+      <div
+        onMouseEnter={() => setActiveParent(id)}
+        onMouseLeave={() => setActiveParent(null)}
+        className={classnames(`${classes.root} ${classes.innerMostSiblingConnector}`, {
+          [classes.highlight]: id === activeParent,
+        })}
+        key={id}
+        data-ancestor-id={id}
+      />
+    );
+  }
+  return (
+    <div
+      onMouseEnter={() => setActiveParent(id)}
+      onMouseLeave={() => setActiveParent(null)}
+      className={classnames(classes.root, {
+        [classes.highlight]: id === activeParent,
+      })}
+      data-ancestor-id={id}
+      key={index}
+    />
+  );
+};
+
+const FieldWrapperBase = ({ ancestors = [], children, style = {} }: IFieldWrapperProps) => {
+  const spacing = ancestors.length * INDENTATION_SPACING;
   const spacingMinusLeftMargin = spacing - 10;
   const firstColumn = `calc(100% - 75px)`;
   const secondColumn = `75px`;
@@ -96,21 +134,27 @@ const FieldWrapperBase = ({ ancestorsCount = 0, children, style = {} }: IFieldWr
   }
   return (
     <CustomizedPaper elevation={2} style={customStyles}>
-      <If condition={ancestorsCount > 1}>
-        <SiblingsWrapper>
-          {Array.from(Array(ancestorsCount - 1).keys()).map((index) => {
-            const classes = useStyles({ index: ancestorsCount - 1 - index });
-            if (index + 1 === ancestorsCount - 1) {
-              return (
-                <div
-                  className={`${classes.root} ${classes.innerMostSiblingConnector}`}
-                  key={index}
-                />
-              );
-            }
-            return <div className={classes.root} key={index} />;
-          })}
-        </SiblingsWrapper>
+      <If condition={ancestors.length > 1}>
+        <SiblingCommunicationConsumer>
+          {({ activeParent, setActiveParent }) => {
+            return (
+              <SiblingsWrapper>
+                {ancestors.slice(1).map((id, index) => {
+                  return (
+                    <SiblingLine
+                      key={id}
+                      id={id}
+                      activeParent={activeParent}
+                      setActiveParent={setActiveParent}
+                      ancestors={ancestors}
+                      index={index}
+                    />
+                  );
+                })}
+              </SiblingsWrapper>
+            );
+          }}
+        </SiblingCommunicationConsumer>
       </If>
       {children}
     </CustomizedPaper>
