@@ -14,8 +14,207 @@
  * the License.
  */
 
-import { INode } from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
-import { ISchemaType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
+import {
+  INode,
+  IOrderedChildren,
+} from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
+import { ISchemaType, IEnumFieldBase } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
+import uuidV4 from 'uuid/v4';
+
+const isTypeLogical = ({ type }) => {
+  switch (type) {
+    case 'decimal':
+    case 'date':
+    case 'time-micros':
+    case 'timestamp-micros':
+      return true;
+    default:
+      return false;
+  }
+};
+
+const isComplexType = ({ type }) => {
+  switch (type) {
+    case 'record':
+    case 'enum':
+    case 'union':
+    case 'map':
+    case 'array':
+      return true;
+    default:
+      return isTypeLogical({ type }) || false;
+  }
+};
+
+function generateArrayType(children: IOrderedChildren, nullable: boolean) {
+  const finalType = {
+    type: 'array',
+    items: null,
+  };
+  for (const childId of Object.keys(children)) {
+    const currentChild = children[childId];
+    const { type: childType, nullable: isArrayTypeNullable } = currentChild;
+    const isArrayTypeComplex = isComplexType({ type: childType });
+    if (!isArrayTypeComplex) {
+      finalType.items = isArrayTypeNullable ? [childType, 'null'] : childType;
+      continue;
+    }
+    const complexType = generateSchemaFromComplexType(
+      childType,
+      currentChild.children,
+      currentChild.nullable
+    );
+    if (complexType) {
+      finalType.items = complexType;
+    }
+  }
+  return nullable ? [finalType, 'null'] : finalType;
+}
+
+function generateMapType(children: IOrderedChildren, nullable) {
+  const finalType = {
+    type: 'map',
+    keys: 'string',
+    values: 'string',
+  };
+  for (const childId of Object.keys(children)) {
+    const currentChild = children[childId];
+    const { type, nullable: isCurrentChildNullable, internalType } = currentChild;
+    const isMapChildComplexType = isComplexType({ type });
+    if (!isMapChildComplexType) {
+      if (internalType === 'map-keys-simple-type') {
+        finalType.keys = isCurrentChildNullable ? [type, 'null'] : type;
+      }
+      if (internalType === 'map-values-simple-type') {
+        finalType.values = isCurrentChildNullable ? [type, 'null'] : type;
+      }
+      continue;
+    }
+    const complexType = generateSchemaFromComplexType(
+      type,
+      currentChild.children,
+      isCurrentChildNullable
+    );
+    if (internalType === 'map-keys-complex-type-root') {
+      finalType.keys = complexType as any;
+    }
+    if (internalType === 'map-values-complex-type-root') {
+      finalType.values = complexType as any;
+    }
+  }
+  return nullable ? [finalType, 'null'] : finalType;
+}
+
+function generateEnumType(children: IOrderedChildren, nullable) {
+  const finalType: IEnumFieldBase = {
+    type: 'enum',
+    symbols: [],
+  };
+  if (Array.isArray(children.order)) {
+    for (const childId of children.order) {
+      const currentChild = children[childId];
+      const { typeProperties } = currentChild;
+      if (typeProperties.symbol) {
+        finalType.symbols.push(typeProperties.symbol);
+      }
+    }
+  }
+  return nullable ? [finalType, 'null'] : finalType;
+}
+
+function generateFieldsFromRecord(children: IOrderedChildren) {
+  const fields = [];
+  if (Array.isArray(children.order)) {
+    for (const childId of children.order) {
+      const currentChild = children[childId];
+      const { name, type, nullable: isFieldTypeNullable } = currentChild;
+      const isFieldTypeComplex = isComplexType({ type });
+      if (!isFieldTypeComplex) {
+        fields.push({
+          name,
+          type: isFieldTypeNullable ? [type, 'null'] : type,
+        });
+        continue;
+      }
+      fields.push({
+        name,
+        type: generateSchemaFromComplexType(type, currentChild.children, isFieldTypeNullable),
+      });
+    }
+  }
+  return fields;
+}
+
+function generateRecordType(children: IOrderedChildren, nullable: boolean) {
+  const finalType = {
+    type: 'record',
+    name: uuidV4(),
+    fields: [],
+  };
+  if (Array.isArray(children.order)) {
+    for (const childId of children.order) {
+      const currentChild = children[childId];
+      const { name, type, nullable: isFiledNullable } = currentChild;
+      const isFieldTypeComplex = isComplexType({ type });
+      if (!isFieldTypeComplex) {
+        finalType.fields.push({
+          name,
+          type: isFiledNullable ? [type, 'null'] : null,
+        });
+      } else {
+        finalType.fields.push({
+          name,
+          type: generateFieldsFromRecord(currentChild.children),
+        });
+      }
+    }
+  }
+  return nullable ? [finalType, 'null'] : finalType;
+}
+
+function generateUnionType(children: IOrderedChildren) {
+  const finalType = [];
+  if (Array.isArray(children.order)) {
+    for (const childId of children.order) {
+      const currentChild = children[childId];
+      const { type } = currentChild;
+      const isUnionTypeComplex = isComplexType({ type });
+      if (!isUnionTypeComplex) {
+        finalType.push(type);
+        continue;
+      }
+      finalType.push(generateSchemaFromComplexType(type, currentChild.children, false));
+    }
+  }
+  return finalType;
+}
+
+function generateLogicalType(child, nullable: boolean) {
+  
+}
+
+function generateSchemaFromComplexType(type: string, currentChild, nullable: boolean) {
+  const complexTypeChildren: IOrderedChildren = currentChild.children;
+  switch (type) {
+    case 'array':
+      return generateArrayType(complexTypeChildren, nullable);
+    case 'map':
+      return generateMapType(complexTypeChildren, nullable);
+    case 'enum':
+      return generateEnumType(complexTypeChildren, nullable);
+    case 'union':
+      return generateUnionType(complexTypeChildren);
+    case 'record':
+      return generateRecordType(complexTypeChildren, nullable);
+    case 'time':
+    case 'timestamp':
+    case 'decimal':
+    case 'date':
+      return generateLogicalType(currentChild, nullable);
+    default:
+      return type;
+  }
+}
 
 function SchemaGenerator(schemaTree: INode) {
   const avroSchema: ISchemaType = {
@@ -30,11 +229,21 @@ function SchemaGenerator(schemaTree: INode) {
     return avroSchema;
   }
   const { order } = schemaTree.children;
-  let children: Record<string, INode>;
-    if (!order) {
-    children = schemaTree.children;
+  if (Array.isArray(order)) {
+    for (const id of order) {
+      const currentField = schemaTree.children[id];
+      const { name, type, nullable } = currentField;
+      const isFieldComplexType = isComplexType({ type });
+      const field = {
+        name,
+        type: nullable ? [type, 'null'] : type,
+      };
+      if (isFieldComplexType) {
+        field.type = generateSchemaFromComplexType(type, currentField, nullable);
+      }
+      avroSchema.schema.fields.push(field);
+    }
   }
-  for (let childId of order) {
-
-  }
+  return avroSchema;
 }
+export { SchemaGenerator };

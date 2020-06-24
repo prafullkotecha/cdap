@@ -45,6 +45,8 @@ import {
   parseComplexType,
 } from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
 import { FlatSchema } from 'components/AbstractWidget/SchemaEditor/Context/FlatSchema';
+import { ISchemaType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
+import { SchemaGenerator } from 'components/AbstractWidget/SchemaEditor/Context/SchemaGenerator';
 
 function getInternalType(tree: INode) {
   const hasChildren = tree.children ? Object.keys(tree.children).length : 0;
@@ -133,6 +135,7 @@ const initTypeProperties = (tree: INode) => {
 interface ISchemaTree {
   getSchemaTree: () => INode;
   getFlatSchema: () => IFlattenRowType[];
+  getAvroSchema: () => ISchemaType;
   onChange: (
     fieldId: IFieldIdentifier,
     currentIndex: number,
@@ -150,6 +153,7 @@ class SchemaTreeBase implements ISchemaTree {
 
   public getSchemaTree = () => this.schemaTree;
   public getFlatSchema = () => this.flatTree;
+  public getAvroSchema = () => SchemaGenerator(this.schemaTree);
 
   private insertNewIdToOrder = (order = [], referenceId) => {
     const id = uuidV4();

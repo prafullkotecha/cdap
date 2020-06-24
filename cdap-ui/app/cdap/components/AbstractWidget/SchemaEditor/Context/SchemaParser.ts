@@ -80,7 +80,7 @@ function parseArrayType(type): IOrderedChildren {
       [id]: {
         internalType: 'array-simple-type',
         id,
-        nullable,
+        nullable: isNullable(t.items),
         type: getNonNullableType(t.items),
       },
     };

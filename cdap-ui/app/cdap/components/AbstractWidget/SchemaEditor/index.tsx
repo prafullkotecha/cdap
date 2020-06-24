@@ -47,7 +47,7 @@ const styles = (theme): StyleRules => {
 
 interface ISchemaEditorProps extends WithStyles<typeof styles> {
   schema: ISchemaType;
-  onChange: (props: { tree: INode; flat: IFlattenRowType[] }) => void;
+  onChange: (props: { tree: INode; flat: IFlattenRowType[]; avroSchema: ISchemaType }) => void;
 }
 
 interface ISchemaEditorState {
@@ -91,7 +91,11 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
         tree: this.schema.getSchemaTree(),
       });
     }
-    this.props.onChange({ tree: this.schema.getSchemaTree(), flat: this.schema.getFlatSchema() });
+    this.props.onChange({
+      tree: this.schema.getSchemaTree(),
+      flat: this.schema.getFlatSchema(),
+      avroSchema: this.schema.getAvroSchema(),
+    });
     return updatedIndex;
   };
   public render() {

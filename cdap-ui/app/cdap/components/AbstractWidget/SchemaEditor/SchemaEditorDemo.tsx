@@ -75,9 +75,9 @@ function SchemaEditorDemoBase({ classes }) {
       <div className={classes.contentContainer}>
         <SchemaEditor
           schema={schema}
-          onChange={({ tree: t, flat: f }) => {
+          onChange={({ tree: t, flat: f, avroSchema }) => {
             // tslint:disable-next-line: no-console
-            console.log(t, f);
+            console.log(t, f, avroSchema);
           }}
         />
       </div>

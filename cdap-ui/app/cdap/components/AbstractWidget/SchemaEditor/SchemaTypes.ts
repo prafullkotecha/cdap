@@ -144,6 +144,7 @@ export {
   IComplexTypeNullable,
   IComplexTypeFieldNullable,
   IComplexType,
+  IEnumFieldBase,
   IEnumField,
   IEnumFieldNullable,
   IMapFieldBase,
