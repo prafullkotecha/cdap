@@ -25,8 +25,8 @@ const isTypeLogical = ({ type }) => {
   switch (type) {
     case 'decimal':
     case 'date':
-    case 'time-micros':
-    case 'timestamp-micros':
+    case 'time':
+    case 'timestamp':
       return true;
     default:
       return false;
@@ -61,7 +61,7 @@ function generateArrayType(children: IOrderedChildren, nullable: boolean) {
     }
     const complexType = generateSchemaFromComplexType(
       childType,
-      currentChild.children,
+      currentChild,
       currentChild.nullable
     );
     if (complexType) {
@@ -90,11 +90,7 @@ function generateMapType(children: IOrderedChildren, nullable) {
       }
       continue;
     }
-    const complexType = generateSchemaFromComplexType(
-      type,
-      currentChild.children,
-      isCurrentChildNullable
-    );
+    const complexType = generateSchemaFromComplexType(type, currentChild, isCurrentChildNullable);
     if (internalType === 'map-keys-complex-type-root') {
       finalType.keys = complexType as any;
     }
@@ -138,7 +134,7 @@ function generateFieldsFromRecord(children: IOrderedChildren) {
       }
       fields.push({
         name,
-        type: generateSchemaFromComplexType(type, currentChild.children, isFieldTypeNullable),
+        type: generateSchemaFromComplexType(type, currentChild, isFieldTypeNullable),
       });
     }
   }
@@ -164,7 +160,7 @@ function generateRecordType(children: IOrderedChildren, nullable: boolean) {
       } else {
         finalType.fields.push({
           name,
-          type: generateFieldsFromRecord(currentChild.children),
+          type: generateFieldsFromRecord(currentChild),
         });
       }
     }
@@ -183,14 +179,15 @@ function generateUnionType(children: IOrderedChildren) {
         finalType.push(type);
         continue;
       }
-      finalType.push(generateSchemaFromComplexType(type, currentChild.children, false));
+      finalType.push(generateSchemaFromComplexType(type, currentChild, false));
     }
   }
   return finalType;
 }
 
-function generateLogicalType(child, nullable: boolean) {
-  
+function generateLogicalType(child) {
+  const { typeProperties, nullable } = child;
+  return nullable ? [typeProperties, 'null'] : typeProperties;
 }
 
 function generateSchemaFromComplexType(type: string, currentChild, nullable: boolean) {
@@ -210,7 +207,7 @@ function generateSchemaFromComplexType(type: string, currentChild, nullable: boo
     case 'timestamp':
     case 'decimal':
     case 'date':
-      return generateLogicalType(currentChild, nullable);
+      return generateLogicalType(currentChild);
     default:
       return type;
   }
