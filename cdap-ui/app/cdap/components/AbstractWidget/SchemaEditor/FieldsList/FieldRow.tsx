@@ -26,6 +26,9 @@ import { UnionType } from 'components/AbstractWidget/SchemaEditor/UnionType';
 import { MapType } from 'components/AbstractWidget/SchemaEditor/MapType';
 import { EnumType } from 'components/AbstractWidget/SchemaEditor/EnumType';
 import { ArrayType } from 'components/AbstractWidget/SchemaEditor/ArrayType';
+import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
+import { SchemaValidatorConsumer } from 'components/AbstractWidget/SchemaEditor/SchemaValidator';
+import If from 'components/If';
 
 interface IFieldRowState {
   name: string;
@@ -179,7 +182,30 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
 
   public render() {
     console.log('Re-rendering every row');
-    return this.RenderSubType(this.props.field);
+    const { ancestors, internalType } = this.props.field;
+    if (internalType === 'schema') {
+      return null;
+    }
+    return (
+      <FieldWrapper ancestors={ancestors}>
+        <SchemaValidatorConsumer>
+          {({ error, id }) => {
+            return (
+              <React.Fragment>
+                {this.RenderSubType(this.props.field)}
+                <If
+                  condition={
+                    id === this.props.field.id && typeof error === 'string' && error.length > 0
+                  }
+                >
+                  <div style={{ color: 'red' }}>{error}</div>
+                </If>
+              </React.Fragment>
+            );
+          }}
+        </SchemaValidatorConsumer>
+      </FieldWrapper>
+    );
   }
 }
 

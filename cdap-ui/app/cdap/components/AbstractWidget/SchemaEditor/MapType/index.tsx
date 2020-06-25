@@ -15,7 +15,6 @@
  */
 
 import * as React from 'react';
-import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
 import Select from 'components/AbstractWidget/FormInputs/Select';
 import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import Box from '@material-ui/core/Box';
@@ -62,7 +61,7 @@ const MapTypeBase = ({
     }
   }, [autoFocus]);
   return (
-    <FieldWrapper ancestors={ancestors}>
+    <React.Fragment>
       <MapWrapper>
         <span>{label}</span>
         <Select
@@ -82,7 +81,7 @@ const MapTypeBase = ({
           onChange('nullable', checked);
         }}
       />
-    </FieldWrapper>
+    </React.Fragment>
   );
 };
 const MapType = React.memo(MapTypeBase);

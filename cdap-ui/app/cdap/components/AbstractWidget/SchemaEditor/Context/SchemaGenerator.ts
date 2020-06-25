@@ -144,7 +144,7 @@ function generateFieldsFromRecord(children: IOrderedChildren) {
 function generateRecordType(children: IOrderedChildren, nullable: boolean) {
   const finalType = {
     type: 'record',
-    name: uuidV4(),
+    name: `name-${uuidV4()}`,
     fields: [],
   };
   if (Array.isArray(children.order)) {
@@ -243,4 +243,5 @@ function SchemaGenerator(schemaTree: INode) {
   }
   return avroSchema;
 }
+
 export { SchemaGenerator };

@@ -29,6 +29,10 @@ import {
   IOnChangePayload,
 } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { FieldsList } from 'components/AbstractWidget/SchemaEditor/FieldsList';
+import {
+  SchemaValidatorConsumer,
+  SchemaValidatorProvider,
+} from 'components/AbstractWidget/SchemaEditor/SchemaValidator';
 
 const styles = (theme): StyleRules => {
   return {
@@ -40,7 +44,7 @@ const styles = (theme): StyleRules => {
     schemaContainer: {
       width: 'auto',
       height: 'auto',
-      maxWidth: '500px',
+      maxWidth: '400px',
     },
   };
 };
@@ -75,6 +79,7 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
   }
 
   public onChange = (
+    validate,
     index: number,
     fieldId: IFieldIdentifier,
     onChangePayload: IOnChangePayload
@@ -96,6 +101,9 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
       flat: this.schema.getFlatSchema(),
       avroSchema: this.schema.getAvroSchema(),
     });
+    if (typeof validate === 'function') {
+      validate(fieldId.id, this.schema.getSchemaTree());
+    }
     return updatedIndex;
   };
   public render() {
@@ -103,9 +111,15 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
     const { classes } = this.props;
     return (
       <div>
-        <div className={classes.schemaContainer}>
-          <FieldsList value={flat} onChange={this.onChange} />
-        </div>
+        <SchemaValidatorProvider>
+          <div className={classes.schemaContainer}>
+            <SchemaValidatorConsumer>
+              {({ validate }) => (
+                <FieldsList value={flat} onChange={this.onChange.bind(this, validate)} />
+              )}
+            </SchemaValidatorConsumer>
+          </div>
+        </SchemaValidatorProvider>
       </div>
     );
   }

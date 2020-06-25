@@ -15,7 +15,6 @@
  */
 
 import * as React from 'react';
-import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
 import TextBox from 'components/AbstractWidget/FormInputs/TextBox';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
@@ -39,7 +38,7 @@ const EnumTypeBase = ({
     }
   }, [autoFocus]);
   return (
-    <FieldWrapper ancestors={ancestors}>
+    <React.Fragment>
       <TextBox
         value={enumSymbol}
         onChange={(value) => {
@@ -52,7 +51,7 @@ const EnumTypeBase = ({
         inputRef={(ref) => (inputEle.current = ref)}
       />
       <RowButtons onRemove={onRemove} onAdd={onAdd} />
-    </FieldWrapper>
+    </React.Fragment>
   );
 };
 const EnumType = React.memo(EnumTypeBase);

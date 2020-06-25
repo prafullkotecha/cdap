@@ -15,7 +15,6 @@
  */
 
 import * as React from 'react';
-import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
 import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import { SingleColumnWrapper } from 'components/AbstractWidget/SchemaEditor/SingleColumnWrapper';
 import Select from 'components/AbstractWidget/FormInputs/Select';
@@ -34,7 +33,7 @@ const ArrayType = ({ ancestors, type, nullable, onChange, autoFocus }: IFieldTyp
     }
   }, [autoFocus]);
   return (
-    <FieldWrapper ancestors={ancestors}>
+    <React.Fragment>
       <SingleColumnWrapper>
         <Select
           value={fieldType}
@@ -53,7 +52,7 @@ const ArrayType = ({ ancestors, type, nullable, onChange, autoFocus }: IFieldTyp
           onChange('nullable', checked);
         }}
       />
-    </FieldWrapper>
+    </React.Fragment>
   );
 };
 

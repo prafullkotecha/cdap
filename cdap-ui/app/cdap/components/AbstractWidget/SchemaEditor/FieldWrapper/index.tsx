@@ -22,7 +22,8 @@ import withStyles from '@material-ui/core/styles/withStyles';
 import { INDENTATION_SPACING } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import If from 'components/If';
-import { SiblingCommunicationConsumer } from './SiblingCommunicationContext';
+import { SiblingCommunicationConsumer } from 'components/AbstractWidget/SchemaEditor/FieldWrapper/SiblingCommunicationContext';
+import { SchemaValidatorConsumer } from 'components/AbstractWidget/SchemaEditor/SchemaValidator';
 import { blue } from 'components/ThemeWrapper/colors';
 import classnames from 'classnames';
 

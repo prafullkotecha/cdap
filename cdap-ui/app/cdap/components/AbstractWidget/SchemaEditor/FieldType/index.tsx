@@ -15,10 +15,7 @@
  */
 
 import * as React from 'react';
-import {
-  FieldWrapper,
-  FieldInputWrapper,
-} from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
+import { FieldInputWrapper } from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
 import TextBox from 'components/AbstractWidget/FormInputs/TextBox';
 import Select from 'components/AbstractWidget/FormInputs/Select';
 import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
@@ -48,7 +45,7 @@ const FieldTypeBase = ({
     }
   }, [autoFocus]);
   return (
-    <FieldWrapper ancestors={ancestors}>
+    <React.Fragment>
       <FieldInputWrapper>
         <TextBox
           onChange={(newValue) => {
@@ -85,7 +82,7 @@ const FieldTypeBase = ({
         onAdd={onAdd}
         onRemove={onRemove}
       />
-    </FieldWrapper>
+    </React.Fragment>
   );
 };
 
