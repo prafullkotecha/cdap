@@ -197,7 +197,6 @@ class CDAP extends Component {
     });
     if (!VersionStore.getState().version) {
       MyCDAPVersionApi.get().subscribe((res) => {
-        this.setState({ version: res.version });
         VersionStore.dispatch({
           type: VersionActions.updateVersion,
           payload: {

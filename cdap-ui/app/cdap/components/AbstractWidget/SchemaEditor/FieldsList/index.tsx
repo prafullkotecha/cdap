@@ -26,7 +26,7 @@ import VirtualScroll from 'components/VirtualScroll';
 
 interface IFieldsListState {
   rows: IFlattenRowType[];
-  currentRowToFocus: number;
+  currentRowToFocus: string;
 }
 
 interface IFieldsListProps {
@@ -39,8 +39,8 @@ interface IFieldsListProps {
 }
 
 export class FieldsList extends React.Component<IFieldsListProps, IFieldsListState> {
-  public static visibleNodeCount = 19;
-  public static childrenUnderFold = 5;
+  public static visibleNodeCount = 20;
+  public static childrenUnderFold = 10;
   public static heightOfRow = 32;
 
   public state: IFieldsListState = {
@@ -59,7 +59,7 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
 
   public onChange = (index: number, field: IFieldIdentifier, onChangePayload: IOnChangePayload) => {
     const updatedIndex = this.props.onChange(index, field, onChangePayload);
-    if (typeof updatedIndex === 'number') {
+    if (typeof updatedIndex === 'string') {
       this.setState({
         currentRowToFocus: updatedIndex,
       });
@@ -67,16 +67,17 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
   };
 
   public renderList = (visibleNodeCount, startNode) => {
+    console.log('calling : ');
     return this.state.rows
       .slice(1)
       .slice(startNode, startNode + visibleNodeCount)
       .map((field, i) => {
         return (
           <FieldRow
-            autoFocus={this.state.currentRowToFocus === i}
+            autoFocus={this.state.currentRowToFocus === field.id}
             key={field.id}
             field={field}
-            onChange={this.onChange.bind(null, i)}
+            onChange={this.onChange.bind(null, i + 1)}
           />
         );
       });
@@ -87,7 +88,7 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
       <SiblingCommunicationProvider>
         {this.state.rows.map((field, i) => (
           <FieldRow
-            autoFocus={this.state.currentRowToFocus === i}
+            autoFocus={this.state.currentRowToFocus === field.id}
             key={field.id}
             field={field}
             onChange={this.onChange.bind(null, i)}
@@ -100,7 +101,7 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
     return (
       <SiblingCommunicationProvider>
         <VirtualScroll
-          itemCount={() => this.state.rows.length}
+          itemCount={() => this.state.rows.length + 2}
           visibleChildCount={FieldsList.visibleNodeCount}
           childHeight={FieldsList.heightOfRow}
           renderList={this.renderList.bind(this)}

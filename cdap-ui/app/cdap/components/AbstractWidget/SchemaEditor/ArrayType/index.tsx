@@ -21,7 +21,7 @@ import Select from 'components/AbstractWidget/FormInputs/Select';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 
-const ArrayType = ({ type, nullable, onChange, autoFocus }: IFieldTypeBaseProps) => {
+const ArrayTypeBase = ({ type, nullable, onChange, autoFocus }: IFieldTypeBaseProps) => {
   const [fieldType, setFieldType] = React.useState(type);
   const [fieldNullable, setFieldNullable] = React.useState(nullable);
   const inputEle = React.useRef(null);
@@ -54,4 +54,5 @@ const ArrayType = ({ type, nullable, onChange, autoFocus }: IFieldTypeBaseProps)
   );
 };
 
+const ArrayType = React.memo(ArrayTypeBase);
 export { ArrayType };

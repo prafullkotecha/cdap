@@ -333,7 +333,7 @@ class SchemaTreeBase implements ISchemaTree {
       ...newFlatSubTree,
       ...this.flatTree.slice(currentIndex + 1 + childrenInBranch),
     ];
-    return currentIndex;
+    return this.flatTree[currentIndex];
   };
 
   private updateTree = (
@@ -406,7 +406,7 @@ class SchemaTreeBase implements ISchemaTree {
     }
     // newFlatSubTree will be of length 1 for simple type changes.
     if (Array.isArray(newFlatSubTree) && newFlatSubTree.length > 1) {
-      return currentIndex + 1;
+      return this.flatTree[currentIndex + 1].id;
     }
   };
 
@@ -424,7 +424,7 @@ class SchemaTreeBase implements ISchemaTree {
       ...newFlatSubTree,
       ...this.flatTree.slice(currentIndex + currentFieldBranchCount + 1),
     ];
-    return currentIndex + currentFieldBranchCount + 1;
+    return this.flatTree[currentIndex + currentFieldBranchCount + 1].id;
   };
 
   public onChange = (

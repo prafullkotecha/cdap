@@ -90,6 +90,13 @@ const VirtualScroll = ({
   }, [startNode, visibleNodeCount]);
 
   useEffect(() => {
+    const newList = renderList(visibleNodeCount, startNode);
+    if (Array.isArray(newList)) {
+      setList(newList);
+    }
+  }, [itemCount]);
+
+  useEffect(() => {
     if (!promise) {
       return;
     }

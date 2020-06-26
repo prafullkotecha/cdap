@@ -24,15 +24,19 @@ import {
   complex1,
   complex2,
   complex3,
+  complex4,
 } from 'components/AbstractWidget/SchemaEditor/data/complexSchema';
 import SchemaEditor from 'components/AbstractWidget/SchemaEditor';
 import withStyles from '@material-ui/core/styles/withStyles';
+import LoadingSVG from 'components/LoadingSVG';
+import If from 'components/If';
 
 const schemas = {
   simple1: simpleSchema,
   complex1,
   complex2,
   complex3,
+  complex4,
 };
 const styles = () => {
   return {
@@ -44,7 +48,7 @@ const styles = () => {
       padding: '10px',
     },
     contentContainer: {
-      height: 'auto',
+      height: '600px',
       display: 'grid',
       gridTemplateColumns: '80%',
     },
@@ -54,15 +58,23 @@ const styles = () => {
 function SchemaEditorDemoBase({ classes }) {
   const [value, setValue] = React.useState('complex1');
   const [schema, setSchema] = React.useState(schemas.complex1);
+  const [loading, setLoading] = React.useState(false);
   const handleChange = (event) => {
     const { value: radioValue } = event.target;
     setValue(radioValue);
     setSchema(schemas[radioValue]);
+    setLoading(true);
   };
+
+  React.useEffect(() => {
+    if (loading) {
+      setTimeout(() => setLoading(false), 500);
+    }
+  }, [loading]);
 
   return (
     <div className={classes.container}>
-      <FormControl component="fieldset">
+      <FormControl component="fieldset" disabled={loading}>
         <RadioGroup aria-label="position" name="position" value={value} onChange={handleChange} row>
           {Object.keys(schemas).map((s, i) => {
             return (
@@ -78,17 +90,22 @@ function SchemaEditorDemoBase({ classes }) {
         </RadioGroup>
       </FormControl>
       <div className={classes.contentContainer}>
-        <SchemaEditor
-          schema={schema}
-          onChange={({ tree: t, flat: f, avroSchema }) => {
-            // tslint:disable-next-line: no-console
-            console.log(t, f, avroSchema);
-          }}
-        />
+        <If condition={loading}>
+          <LoadingSVG />
+        </If>
+        <If condition={!loading}>
+          <SchemaEditor
+            schema={schema}
+            onChange={({ tree: t, flat: f, avroSchema }) => {
+              // tslint:disable-next-line: no-console
+              console.log(t, f, avroSchema);
+            }}
+          />
+        </If>
       </div>
     </div>
   );
 }
 
 const SchemaEditorDemo = withStyles(styles)(SchemaEditorDemoBase);
-export default SchemaEditorDemo;
+export default React.memo(SchemaEditorDemo);

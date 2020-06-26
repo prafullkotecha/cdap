@@ -238,5 +238,5 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
   }
 }
 
-const FieldRow = withStyles(styles)(FieldRowBase);
+const FieldRow = React.memo(withStyles(styles)(FieldRowBase));
 export { FieldRow };
