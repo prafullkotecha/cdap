@@ -29,6 +29,29 @@ import { ArrayType } from 'components/AbstractWidget/SchemaEditor/ArrayType';
 import { FieldWrapper } from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
 import { SchemaValidatorConsumer } from 'components/AbstractWidget/SchemaEditor/SchemaValidator';
 import If from 'components/If';
+import ErrorIcon from '@material-ui/icons/ErrorOutline';
+import classnames from 'classnames';
+import withStyles, { WithStyles, StyleRules } from '@material-ui/core/styles/withStyles';
+import Tooltip from '@material-ui/core/Tooltip';
+
+const styles = (theme): StyleRules => {
+  return {
+    errorIcon: {
+      position: 'absolute',
+      right: '-22px', // the size of the icon is 18px pushing it to right a little bit
+      color: theme.palette.red[200],
+    },
+    erroredRow: {
+      outline: `2px solid ${theme.palette.red[200]}`,
+    },
+    tooltip: {
+      backgroundColor: theme.palette.red[200],
+      color: 'white',
+      fontSize: '12px',
+      wordBreak: 'break-word',
+    },
+  };
+};
 
 interface IFieldRowState {
   name: string;
@@ -37,13 +60,13 @@ interface IFieldRowState {
   typeProperties: Record<string, string>;
 }
 
-interface IFieldRowProps {
+interface IFieldRowProps extends WithStyles<typeof styles> {
   field: IFlattenRowType;
   onChange: (id: IFieldIdentifier, payload: IOnChangePayload) => void;
   autoFocus?: boolean;
 }
 
-class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
+class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
   public state: IFieldRowState = {
     name: '',
     type: schemaTypes[0],
@@ -182,31 +205,38 @@ class FieldRow extends React.Component<IFieldRowProps, IFieldRowState> {
 
   public render() {
     console.log('Re-rendering every row');
+    const { classes } = this.props;
     const { ancestors, internalType } = this.props.field;
     if (internalType === 'schema') {
       return null;
     }
     return (
-      <FieldWrapper ancestors={ancestors}>
-        <SchemaValidatorConsumer>
-          {({ error, id }) => {
-            return (
+      <SchemaValidatorConsumer>
+        {({ error, id }) => {
+          const hasError =
+            id === this.props.field.id && typeof error === 'string' && error.length > 0;
+          return (
+            <FieldWrapper
+              ancestors={ancestors}
+              className={classnames({
+                [classes.erroredRow]: hasError,
+              })}
+            >
               <React.Fragment>
-                {this.RenderSubType(this.props.field)}
-                <If
-                  condition={
-                    id === this.props.field.id && typeof error === 'string' && error.length > 0
-                  }
-                >
-                  <div style={{ color: 'red' }}>{error}</div>
+                <If condition={hasError}>
+                  <Tooltip classes={{ tooltip: classes.tooltip }} title={error} placement="right">
+                    <ErrorIcon className={classes.errorIcon} />
+                  </Tooltip>
                 </If>
+                {this.RenderSubType(this.props.field)}
               </React.Fragment>
-            );
-          }}
-        </SchemaValidatorConsumer>
-      </FieldWrapper>
+            </FieldWrapper>
+          );
+        }}
+      </SchemaValidatorConsumer>
     );
   }
 }
 
+const FieldRow = withStyles(styles)(FieldRowBase);
 export { FieldRow };

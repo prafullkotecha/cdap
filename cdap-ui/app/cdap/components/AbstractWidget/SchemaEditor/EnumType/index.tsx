@@ -41,10 +41,15 @@ const EnumTypeBase = ({
     <React.Fragment>
       <TextBox
         value={enumSymbol}
+        onKeyPress={(event: React.KeyboardEvent) => {
+          if (event.nativeEvent.keyCode === 13) {
+            onAdd();
+          }
+        }}
         onChange={(value) => {
           setEnumSymbol(value);
           onChange('typeProperties', {
-            symbol: enumSymbol,
+            symbol: value,
           });
         }}
         widgetProps={{ placeholder: 'symbol' }}

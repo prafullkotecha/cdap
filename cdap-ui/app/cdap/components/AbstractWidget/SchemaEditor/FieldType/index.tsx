@@ -23,7 +23,6 @@ import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/Edit
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 
 const FieldTypeBase = ({
-  ancestors,
   name,
   type,
   nullable,
@@ -44,6 +43,10 @@ const FieldTypeBase = ({
       }
     }
   }, [autoFocus]);
+  const onNullable = (checked) => {
+    setFieldNullable(checked);
+    onChange('nullable', checked);
+  };
   return (
     <React.Fragment>
       <FieldInputWrapper>
@@ -75,10 +78,7 @@ const FieldTypeBase = ({
       </FieldInputWrapper>
       <RowButtons
         nullable={fieldNullable}
-        onNullable={(checked) => {
-          setFieldNullable(checked);
-          onChange('nullable', checked);
-        }}
+        onNullable={type === 'union' ? undefined : onNullable}
         onAdd={onAdd}
         onRemove={onRemove}
       />

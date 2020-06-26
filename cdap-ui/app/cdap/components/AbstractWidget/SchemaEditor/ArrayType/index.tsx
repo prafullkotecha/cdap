@@ -21,7 +21,7 @@ import Select from 'components/AbstractWidget/FormInputs/Select';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 
-const ArrayType = ({ ancestors, type, nullable, onChange, autoFocus }: IFieldTypeBaseProps) => {
+const ArrayType = ({ type, nullable, onChange, autoFocus }: IFieldTypeBaseProps) => {
   const [fieldType, setFieldType] = React.useState(type);
   const [fieldNullable, setFieldNullable] = React.useState(nullable);
   const inputEle = React.useRef(null);
@@ -32,6 +32,10 @@ const ArrayType = ({ ancestors, type, nullable, onChange, autoFocus }: IFieldTyp
       }
     }
   }, [autoFocus]);
+  const onNullable = (checked) => {
+    setFieldNullable(checked);
+    onChange('nullable', checked);
+  };
   return (
     <React.Fragment>
       <SingleColumnWrapper>
@@ -45,13 +49,7 @@ const ArrayType = ({ ancestors, type, nullable, onChange, autoFocus }: IFieldTyp
           inputRef={(ref) => (inputEle.current = ref)}
         />
       </SingleColumnWrapper>
-      <RowButtons
-        nullable={fieldNullable}
-        onNullable={(checked) => {
-          setFieldNullable(checked);
-          onChange('nullable', checked);
-        }}
-      />
+      <RowButtons nullable={fieldNullable} onNullable={type === 'union' ? undefined : onNullable} />
     </React.Fragment>
   );
 };

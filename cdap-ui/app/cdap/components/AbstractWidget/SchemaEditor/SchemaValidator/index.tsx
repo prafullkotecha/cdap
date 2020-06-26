@@ -18,6 +18,7 @@ import * as React from 'react';
 import cdapavsc from 'services/cdapavscwrapper';
 import { SchemaGenerator } from 'components/AbstractWidget/SchemaEditor/Context/SchemaGenerator';
 import { ISchemaType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
+import isNil from 'lodash/isNil';
 
 interface ISchemaValidatorProviderBaseState {
   id: string;
@@ -48,6 +49,9 @@ class SchemaValidatorProvider extends React.Component {
     try {
       const validSchema = cdapavsc.parse(avroSchema.schema, { wrapUnions: true });
     } catch (e) {
+      if (!isNil(this.state.error) && e.message === this.state.error) {
+        return;
+      }
       this.setState({
         id,
         time: Date.now(),

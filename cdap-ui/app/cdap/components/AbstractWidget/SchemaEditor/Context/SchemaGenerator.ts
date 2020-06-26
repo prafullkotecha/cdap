@@ -110,7 +110,7 @@ function generateEnumType(children: IOrderedChildren, nullable) {
     for (const childId of children.order) {
       const currentChild = children[childId];
       const { typeProperties } = currentChild;
-      if (typeProperties.symbol) {
+      if (typeProperties.symbol && typeProperties.symbol !== '') {
         finalType.symbols.push(typeProperties.symbol);
       }
     }
@@ -124,6 +124,9 @@ function generateFieldsFromRecord(children: IOrderedChildren) {
     for (const childId of children.order) {
       const currentChild = children[childId];
       const { name, type, nullable: isFieldTypeNullable } = currentChild;
+      if (!name || name === '') {
+        continue;
+      }
       const isFieldTypeComplex = isComplexType({ type });
       if (!isFieldTypeComplex) {
         fields.push({
@@ -151,11 +154,14 @@ function generateRecordType(children: IOrderedChildren, nullable: boolean) {
     for (const childId of children.order) {
       const currentChild = children[childId];
       const { name, type, nullable: isFiledNullable } = currentChild;
+      if (!name || name === '') {
+        continue;
+      }
       const isFieldTypeComplex = isComplexType({ type });
       if (!isFieldTypeComplex) {
         finalType.fields.push({
           name,
-          type: isFiledNullable ? [type, 'null'] : null,
+          type: isFiledNullable ? [type, 'null'] : type,
         });
       } else {
         finalType.fields.push({
@@ -230,6 +236,9 @@ function SchemaGenerator(schemaTree: INode) {
     for (const id of order) {
       const currentField = schemaTree.children[id];
       const { name, type, nullable } = currentField;
+      if (!name || name === '') {
+        continue;
+      }
       const isFieldComplexType = isComplexType({ type });
       const field = {
         name,

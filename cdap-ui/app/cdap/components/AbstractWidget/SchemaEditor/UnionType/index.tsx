@@ -52,14 +52,7 @@ const UnionTypeBase = ({
           inputRef={(ref) => (inputEle.current = ref)}
         />
       </SingleColumnWrapper>
-      <RowButtons
-        nullable={fieldNullable}
-        onNullable={(checked) => {
-          setFieldNullable(checked);
-          onChange('nullable', checked);
-        }}
-        onAdd={onAdd}
-      />
+      <RowButtons onAdd={onAdd} />
     </React.Fragment>
   );
 };

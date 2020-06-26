@@ -36,7 +36,6 @@ const MapWrapper = withStyles(
 )(Box);
 
 const MapTypeBase = ({
-  ancestors,
   internalType,
   type,
   nullable,
@@ -60,6 +59,10 @@ const MapTypeBase = ({
       }
     }
   }, [autoFocus]);
+  const onNullable = (checked) => {
+    setFieldNullable(checked);
+    onChange('nullable', checked);
+  };
   return (
     <React.Fragment>
       <MapWrapper>
@@ -74,13 +77,7 @@ const MapTypeBase = ({
           inputRef={(ref) => (inputEle.current = ref)}
         />
       </MapWrapper>
-      <RowButtons
-        nullable={fieldNullable}
-        onNullable={(checked) => {
-          setFieldNullable(checked);
-          onChange('nullable', checked);
-        }}
-      />
+      <RowButtons nullable={fieldNullable} onNullable={type === 'union' ? undefined : onNullable} />
     </React.Fragment>
   );
 };

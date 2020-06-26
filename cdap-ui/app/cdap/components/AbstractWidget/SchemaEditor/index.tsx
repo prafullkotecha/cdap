@@ -101,7 +101,7 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
       flat: this.schema.getFlatSchema(),
       avroSchema: this.schema.getAvroSchema(),
     });
-    if (typeof validate === 'function') {
+    if (typeof validate === 'function' && onChangePayload.value !== '') {
       validate(fieldId.id, this.schema.getSchemaTree());
     }
     return updatedIndex;
