@@ -259,6 +259,22 @@ body.theme-cdap {
         }
       }
     }
+
+    .canvas-wrapper .top-panel .pipeline-settings.pipeline-logs-section {
+      left: 0;
+      max-width: 100%;
+      width: 100%;
+      max-height: ~"calc(100vh - 48px - 41px - 54px)";
+      height: ~"calc(100vh - 48px - 41px - 54px)";
+      background-color: #FFFFFF;
+
+      preview-logs {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+    }
+
     .pipeline-settings {
       // Right now we don't have the height of the top panel to be the same
       // in both studio and published view.

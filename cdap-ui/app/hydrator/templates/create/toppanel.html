@@ -287,11 +287,10 @@
   </my-pipeline-scheduler>
 </div>
 <div class="pipeline-settings pipeline-logs-section" ng-if="HydratorPlusPlusTopPanelCtrl.viewLogs">
-  <my-log-viewer-preview
-    namespace-id="{{HydratorPlusPlusTopPanelCtrl.$state.params.namespace}}"
-    preview-id="{{HydratorPlusPlusTopPanelCtrl.currentPreviewId}}"
-    entity-name="{{HydratorPlusPlusTopPanelCtrl.state.metadata['name']}}">
-  </my-log-viewer-preview>
+  <preview-logs
+    namespace="HydratorPlusPlusTopPanelCtrl.$state.params.namespace"
+    preview-id="HydratorPlusPlusTopPanelCtrl.currentPreviewId">
+  </preview-logs>
 </div>
 
 <my-file-select class="sr-only"
