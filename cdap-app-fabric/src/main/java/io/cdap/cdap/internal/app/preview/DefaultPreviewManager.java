@@ -52,6 +52,7 @@ import io.cdap.cdap.data2.metadata.writer.MetadataServiceClient;
 import io.cdap.cdap.data2.metadata.writer.NoOpMetadataServiceClient;
 import io.cdap.cdap.internal.provision.ProvisionerModule;
 import io.cdap.cdap.logging.guice.LocalLogAppenderModule;
+import io.cdap.cdap.logging.guice.PreviewLocalLogAppenderModule;
 import io.cdap.cdap.logging.read.FileLogReader;
 import io.cdap.cdap.logging.read.LogReader;
 import io.cdap.cdap.messaging.guice.MessagingServerRuntimeModule;
@@ -214,7 +215,7 @@ public class DefaultPreviewManager extends AbstractIdleService implements Previe
       // Use the in-memory module for metrics collection, which metrics still get persisted to dataset, but
       // save threads for reading metrics from TMS, as there won't be metrics in TMS.
       new MetricsClientRuntimeModule().getInMemoryModules(),
-      new LocalLogAppenderModule(),
+      new PreviewLocalLogAppenderModule(),
       new MessagingServerRuntimeModule().getInMemoryModules(),
       Modules.override(new MetadataReaderWriterModules().getInMemoryModules()).with(new AbstractModule() {
         @Override
