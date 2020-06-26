@@ -22,6 +22,7 @@ import {
 } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { FieldRow } from 'components/AbstractWidget/SchemaEditor/FieldsList/FieldRow';
 import { SiblingCommunicationProvider } from 'components/AbstractWidget/SchemaEditor/FieldWrapper/SiblingCommunicationContext';
+import VirtualScroll from 'components/VirtualScroll';
 
 interface IFieldsListState {
   rows: IFlattenRowType[];
@@ -38,9 +39,13 @@ interface IFieldsListProps {
 }
 
 export class FieldsList extends React.Component<IFieldsListProps, IFieldsListState> {
+  public static visibleNodeCount = 19;
+  public static childrenUnderFold = 5;
+  public static heightOfRow = 32;
+
   public state: IFieldsListState = {
     rows: this.props.value || [],
-    currentRowToFocus: 0,
+    currentRowToFocus: null,
   };
   public componentWillReceiveProps(nextProps: IFieldsListProps) {
     const ids = nextProps.value.map((r) => r.id).join(',');
@@ -61,7 +66,23 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
     }
   };
 
-  public render() {
+  public renderList = (visibleNodeCount, startNode) => {
+    return this.state.rows
+      .slice(1)
+      .slice(startNode, startNode + visibleNodeCount)
+      .map((field, i) => {
+        return (
+          <FieldRow
+            autoFocus={this.state.currentRowToFocus === i}
+            key={field.id}
+            field={field}
+            onChange={this.onChange.bind(null, i)}
+          />
+        );
+      });
+  };
+
+  public render1() {
     return (
       <SiblingCommunicationProvider>
         {this.state.rows.map((field, i) => (
@@ -72,6 +93,19 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
             onChange={this.onChange.bind(null, i)}
           />
         ))}
+      </SiblingCommunicationProvider>
+    );
+  }
+  public render() {
+    return (
+      <SiblingCommunicationProvider>
+        <VirtualScroll
+          itemCount={() => this.state.rows.length}
+          visibleChildCount={FieldsList.visibleNodeCount}
+          childHeight={FieldsList.heightOfRow}
+          renderList={this.renderList.bind(this)}
+          childrenUnderFold={FieldsList.childrenUnderFold}
+        />
       </SiblingCommunicationProvider>
     );
   }

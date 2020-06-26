@@ -20,7 +20,11 @@ import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
 import simpleSchema from 'components/AbstractWidget/SchemaEditor/data/simpleSchema';
-import { complex1, complex2 } from 'components/AbstractWidget/SchemaEditor/data/complexSchema';
+import {
+  complex1,
+  complex2,
+  complex3,
+} from 'components/AbstractWidget/SchemaEditor/data/complexSchema';
 import SchemaEditor from 'components/AbstractWidget/SchemaEditor';
 import withStyles from '@material-ui/core/styles/withStyles';
 
@@ -28,6 +32,7 @@ const schemas = {
   simple1: simpleSchema,
   complex1,
   complex2,
+  complex3,
 };
 const styles = () => {
   return {

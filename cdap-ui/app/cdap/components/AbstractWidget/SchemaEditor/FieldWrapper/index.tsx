@@ -128,8 +128,7 @@ const FieldWrapperBase = ({
   let customStyles = {
     marginLeft: `${spacing}px`,
     gridTemplateColumns: `${firstColumn} ${secondColumn}`,
-    width: `calc(100% - ${spacingMinusLeftMargin}px)`,
-    gridGap: '10px',
+    width: `calc(100% - ${spacing + 5 /* box shadow */}px)`,
     alignItems: 'center',
   };
   if (style && isObject(style)) {
