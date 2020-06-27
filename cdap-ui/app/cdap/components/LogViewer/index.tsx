@@ -68,6 +68,7 @@ const styles = (theme): StyleRules => {
 
 interface ILogViewerProps extends WithStyles<typeof styles> {
   dataFetcher: DataFetcher;
+  stopPoll?: boolean;
 }
 
 interface ILogViewerState {
@@ -202,6 +203,12 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
   };
 
   private startPoll = () => {
+    if (this.props.stopPoll) {
+      this.stopPoll();
+      this.fetchNext(); // to guarantee after we fetch one more time to get latest logs
+      return;
+    }
+
     if (!this.state.isPolling) {
       this.setState({ isPolling: true });
     }
@@ -233,7 +240,10 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
     }
 
     if (this.state.isPolling) {
-      this.setState({ isPolling: false });
+      this.setState({
+        isPolling: false,
+        isFetching: false,
+      });
     }
   };
 

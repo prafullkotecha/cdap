@@ -286,10 +286,14 @@
     on-close="HydratorPlusPlusTopPanelCtrl.viewScheduler = false">
   </my-pipeline-scheduler>
 </div>
-<div class="pipeline-settings pipeline-logs-section" ng-if="HydratorPlusPlusTopPanelCtrl.viewLogs">
+<div
+  class="pipeline-settings pipeline-logs-section"
+  ng-if="HydratorPlusPlusTopPanelCtrl.viewLogs"
+>
   <preview-logs
     namespace="HydratorPlusPlusTopPanelCtrl.$state.params.namespace"
-    preview-id="HydratorPlusPlusTopPanelCtrl.currentPreviewId">
+    preview-id="HydratorPlusPlusTopPanelCtrl.currentPreviewId"
+    stop-poll="!HydratorPlusPlusTopPanelCtrl.previewRunning">
   </preview-logs>
 </div>
 

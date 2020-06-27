@@ -102,7 +102,6 @@ class PreviewDataFetcher implements DataFetcher {
     const params = this.getBaseParams();
 
     return MyPreviewApi.nextLogs(params).map((res) => {
-      console.log('res', res);
       if (res.length > 0) {
         this.firstLog = res[0];
         this.lastLog = res[res.length - 1];

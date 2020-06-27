@@ -16,16 +16,38 @@
 
 import * as React from 'react';
 import PropTypes from 'prop-types';
+import withStyles, { WithStyles, StyleRules } from '@material-ui/core/styles/withStyles';
 import PreviewDataFetcher from 'components/LogViewer/DataFetcher/PreviewDataFetcher';
 import LogViewer from 'components/LogViewer';
 import ThemeWrapper from 'components/ThemeWrapper';
 
-interface IPreviewLogs {
+const height = 'calc(100vh - 48px - 41px - 54px)';
+
+const styles = (theme): StyleRules => {
+  return {
+    container: {
+      left: 0,
+      maxWidth: '100%',
+      width: '100%',
+      maxHeight: height,
+      height,
+      backgroundColor: theme.palette.white[50],
+    },
+  };
+};
+
+interface IPreviewLogs extends WithStyles<typeof styles> {
   namespace: string;
   previewId: string;
+  stopPoll: boolean;
 }
 
-const PreviewLogsWrapper: React.FC<IPreviewLogs> = ({ namespace, previewId }) => {
+const PreviewLogsWrapper: React.FC<IPreviewLogs> = ({
+  classes,
+  namespace,
+  previewId,
+  stopPoll,
+}) => {
   const [dataFetcher] = React.useState(
     new PreviewDataFetcher({
       namespace,
@@ -33,13 +55,19 @@ const PreviewLogsWrapper: React.FC<IPreviewLogs> = ({ namespace, previewId }) =>
     })
   );
 
-  return <LogViewer dataFetcher={dataFetcher} />;
+  return (
+    <div className={classes.container}>
+      <LogViewer dataFetcher={dataFetcher} stopPoll={stopPoll} />
+    </div>
+  );
 };
+
+const StyledPreviewLogsWrapper = withStyles(styles)(PreviewLogsWrapper);
 
 function PreviewLogs(props) {
   return (
     <ThemeWrapper>
-      <PreviewLogsWrapper {...props} />
+      <StyledPreviewLogsWrapper {...props} />
     </ThemeWrapper>
   );
 }
@@ -47,6 +75,7 @@ function PreviewLogs(props) {
 (PreviewLogs as any).propTypes = {
   namespace: PropTypes.string,
   previewId: PropTypes.string,
+  stopPoll: PropTypes.bool,
 };
 
 export default PreviewLogs;
