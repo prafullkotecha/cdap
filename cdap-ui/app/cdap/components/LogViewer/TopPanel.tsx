@@ -20,6 +20,10 @@ import DataFetcher from 'components/LogViewer/DataFetcher';
 import Button from '@material-ui/core/Button';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import classnames from 'classnames';
+import If from 'components/If';
+import IconButton from '@material-ui/core/IconButton';
+import Close from '@material-ui/icons/Close';
 
 export const TOP_PANEL_HEIGHT = '50px';
 
@@ -34,6 +38,7 @@ const styles = (theme): StyleRules => {
       height: TOP_PANEL_HEIGHT,
       paddingLeft: '20px',
       paddingRight: '20px',
+      position: 'relative',
     },
     actionButton: {
       margin: theme.spacing(1),
@@ -43,13 +48,40 @@ const styles = (theme): StyleRules => {
         borderColor: theme.palette.white[50],
         backgroundColor: theme.palette.grey[200],
       },
+
+      '&$disabled': {
+        // needed to beat specificity
+        color: theme.palette.grey[50],
+        cursor: 'not-allowed',
+        backgroundColor: theme.palette.white[50],
+      },
     },
+    disabled: {},
     checkboxContainer: {
       margin: '0 40px',
       userSelect: 'none',
     },
     checkbox: {
       color: theme.palette.white[50],
+    },
+    error: {
+      position: 'absolute',
+      backgroundColor: theme.palette.red[100],
+      color: theme.palette.white[50],
+      top: 0,
+      left: 0,
+      right: 0,
+      display: 'grid',
+      gridTemplateColumns: '1fr 75px',
+      minHeight: '100%',
+      alignItems: 'center',
+    },
+    closeButtonContainer: {
+      textAlign: 'center',
+    },
+    errorMessageContainer: {
+      paddingLeft: '10px',
+      paddingRight: '10px',
     },
   };
 };
@@ -59,6 +91,8 @@ interface ITopPanelProps extends WithStyles<typeof styles> {
   isPolling: boolean;
   getLatestLogs: () => void;
   setSystemLogs: (includeSystemLogs: boolean) => void;
+  error?: string;
+  dismissError: () => void;
 }
 
 const TopPanelView: React.FC<ITopPanelProps> = ({
@@ -67,6 +101,8 @@ const TopPanelView: React.FC<ITopPanelProps> = ({
   isPolling,
   getLatestLogs,
   setSystemLogs,
+  error,
+  dismissError,
 }) => {
   const [includeSystemLogs, setLocalIncludeSystemLogs] = React.useState(
     dataFetcher.getIncludeSystemLogs()
@@ -113,7 +149,7 @@ const TopPanelView: React.FC<ITopPanelProps> = ({
       <Button
         variant="outlined"
         color="inherit"
-        className={classes.actionButton}
+        className={classnames(classes.actionButton, { [classes.disabled]: isPolling })}
         disabled={isPolling}
         onClick={getLatestLogs}
       >
@@ -136,6 +172,19 @@ const TopPanelView: React.FC<ITopPanelProps> = ({
       >
         Download All
       </Button>
+
+      <If condition={!!error}>
+        <div className={classes.error}>
+          <div className={classes.errorMessageContainer}>
+            <span>{error}</span>
+          </div>
+          <div className={classes.closeButtonContainer}>
+            <IconButton onClick={dismissError}>
+              <Close />
+            </IconButton>
+          </div>
+        </div>
+      </If>
     </div>
   );
 };

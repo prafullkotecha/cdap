@@ -22,6 +22,7 @@ import LogRow from 'components/LogViewer/LogRow';
 import debounce from 'lodash/debounce';
 import TopPanel, { TOP_PANEL_HEIGHT } from 'components/LogViewer/TopPanel';
 import LogLevel from 'components/LogViewer/LogLevel';
+import { extractErrorMessage } from 'services/helpers';
 
 export function logsTableGridStyle(theme): StyleRules {
   return {
@@ -73,10 +74,12 @@ interface ILogViewerState {
   logs: ILogResponse[];
   isFetching: boolean;
   isPolling: boolean;
+  error?: string;
 }
 
 const MAX_LOG_ROWS = 100;
 const SCROLL_BUFFER = 10;
+const POLL_FREQUENCY = 5000;
 
 class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState> {
   private bottomIndicator;
@@ -97,6 +100,7 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
     logs: [],
     isFetching: true,
     isPolling: true,
+    error: null,
   };
 
   public componentDidMount() {
@@ -104,7 +108,7 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
   }
 
   private init() {
-    this.props.dataFetcher.init().subscribe(this.processFirstResponse);
+    this.props.dataFetcher.init().subscribe(this.processFirstResponse, this.processError);
   }
 
   private processFirstResponse = (response) => {
@@ -122,9 +126,25 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
         this.setIntersectionObserver();
 
         this.setState({ isFetching: false });
-        this.pollTimeout = setTimeout(this.startPoll, 5000);
+        this.pollTimeout = setTimeout(this.startPoll, POLL_FREQUENCY);
       }
     );
+  };
+
+  private processError = (err) => {
+    const extractedMessage = extractErrorMessage(err);
+    const errorMessage =
+      typeof extractedMessage === 'string' ? extractedMessage : JSON.stringify(extractedMessage);
+
+    this.setState({
+      error: errorMessage,
+      isPolling: false,
+      isFetching: false,
+    });
+  };
+
+  private dismissError = () => {
+    this.setState({ error: null });
   };
 
   private setIntersectionObserver = () => {
@@ -192,13 +212,18 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
         this.setState({ logs: newLogs });
       }
 
-      this.setState({ isFetching: false }, () => {
-        this.scrollToBottom();
-        this.trimTopExcessLogs();
+      this.setState(
+        {
+          isFetching: false,
+        },
+        () => {
+          this.scrollToBottom();
+          this.trimTopExcessLogs();
 
-        this.pollTimeout = setTimeout(this.startPoll, 5000);
-      });
-    });
+          this.pollTimeout = setTimeout(this.startPoll, POLL_FREQUENCY);
+        }
+      );
+    }, this.processError);
   };
 
   private stopPoll = () => {
@@ -221,14 +246,17 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
     const logsContainer = this.logsContainer.current;
     const currentScrollHeight = logsContainer.scrollHeight;
 
-    this.props.dataFetcher.getPrev().subscribe(
-      (res) => {
-        if (res.length > 0) {
-          const newLogs = res.concat(this.state.logs);
-          this.setState({ logs: newLogs });
-        }
+    this.props.dataFetcher.getPrev().subscribe((res) => {
+      if (res.length > 0) {
+        const newLogs = res.concat(this.state.logs);
+        this.setState({ logs: newLogs });
+      }
 
-        this.setState({ isFetching: false }, () => {
+      this.setState(
+        {
+          isFetching: false,
+        },
+        () => {
           // maintaining scroll position
           const updatedScrollHeight = logsContainer.scrollHeight;
           logsContainer.scrollTop = updatedScrollHeight - currentScrollHeight;
@@ -243,13 +271,9 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
             trimmedLogs[0],
             trimmedLogs[this.state.logs.length - 1]
           );
-        });
-      },
-      (err) => {
-        // tslint:disable-next-line: no-console
-        console.log('err', err);
-      }
-    );
+        }
+      );
+    }, this.processError);
   }, 100);
 
   private fetchNext = debounce(() => {
@@ -258,20 +282,19 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
     }
     this.setState({ isFetching: true });
 
-    this.props.dataFetcher.getNext().subscribe(
-      (res) => {
-        if (res.length > 0) {
-          const newLogs = this.state.logs.concat(res);
-          this.setState({ logs: newLogs });
-        }
-
-        this.setState({ isFetching: false }, this.trimTopExcessLogs);
-      },
-      (err) => {
-        // tslint:disable-next-line: no-console
-        console.log('err', err);
+    this.props.dataFetcher.getNext().subscribe((res) => {
+      if (res.length > 0) {
+        const newLogs = this.state.logs.concat(res);
+        this.setState({ logs: newLogs });
       }
-    );
+
+      this.setState(
+        {
+          isFetching: false,
+        },
+        this.trimTopExcessLogs
+      );
+    }, this.processError);
   }, 100);
 
   // Trimming the top entries of logs will change the scroll height. This function will calculate the
@@ -308,14 +331,12 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
     this.cleanUpWatchers();
 
     this.setState(
-      () => {
-        return {
-          isFetching: true,
-          isPolling: true,
-        };
+      {
+        isFetching: true,
+        isPolling: true,
       },
       () => {
-        this.props.dataFetcher.getLast().subscribe(this.processFirstResponse);
+        this.props.dataFetcher.getLast().subscribe(this.processFirstResponse, this.processError);
       }
     );
   };
@@ -324,14 +345,14 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
     this.cleanUpWatchers();
 
     this.setState(
-      () => {
-        return {
-          isFetching: true,
-          isPolling: true,
-        };
+      {
+        isFetching: true,
+        isPolling: true,
       },
       () => {
-        this.props.dataFetcher.setLogLevel(level).subscribe(this.processFirstResponse);
+        this.props.dataFetcher
+          .setLogLevel(level)
+          .subscribe(this.processFirstResponse, this.processError);
       }
     );
   };
@@ -340,16 +361,14 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
     this.cleanUpWatchers();
 
     this.setState(
-      () => {
-        return {
-          isFetching: true,
-          isPolling: true,
-        };
+      {
+        isFetching: true,
+        isPolling: true,
       },
       () => {
         this.props.dataFetcher
           .setIncludeSystemLogs(includeSystemLogs)
-          .subscribe(this.processFirstResponse);
+          .subscribe(this.processFirstResponse, this.processError);
       }
     );
   };
@@ -363,6 +382,8 @@ class LogViewerView extends React.PureComponent<ILogViewerProps, ILogViewerState
           isPolling={this.state.isPolling}
           getLatestLogs={this.getLatestLogs}
           setSystemLogs={this.setIncludeSystemLogs}
+          error={this.state.error}
+          dismissError={this.dismissError}
         />
         <div className={classes.logsTableHeader}>
           <div className={classes.cell}>Time</div>

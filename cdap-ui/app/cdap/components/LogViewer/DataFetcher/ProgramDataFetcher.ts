@@ -20,8 +20,6 @@ import { MyProgramApi } from 'api/program';
 import { Observable } from 'rxjs/Observable';
 
 const PROGRAM_LOGS_FILTER = 'AND .origin=plugin OR .origin=program';
-const PIPELINE_LOGS_FILTER =
-  'AND .origin=plugin OR MDC:eventType=lifecycle OR MDC:eventType=userLog';
 
 class ProgramDataFetcher implements DataFetcher {
   private namespace;
@@ -37,14 +35,14 @@ class ProgramDataFetcher implements DataFetcher {
 
   private logLevel = LogLevel.INFO;
 
-  constructor(programObj: IProgram, isPipeline = true) {
+  constructor(programObj: IProgram, logsFilter?: string) {
     this.namespace = programObj.namespace;
     this.application = programObj.application;
     this.programType = programObj.programType;
     this.programName = programObj.programName;
     this.runId = programObj.runId;
 
-    this.logFilter = isPipeline ? PIPELINE_LOGS_FILTER : PROGRAM_LOGS_FILTER;
+    this.logFilter = logsFilter ? logsFilter : PROGRAM_LOGS_FILTER;
   }
 
   private getFilter = (): string => {
