@@ -23,8 +23,10 @@ import { INDENTATION_SPACING } from 'components/AbstractWidget/SchemaEditor/Sche
 import makeStyles from '@material-ui/core/styles/makeStyles';
 import If from 'components/If';
 import { SiblingCommunicationConsumer } from 'components/AbstractWidget/SchemaEditor/FieldWrapper/SiblingCommunicationContext';
-import { blue } from 'components/ThemeWrapper/colors';
+import { blue, red } from 'components/ThemeWrapper/colors';
 import classnames from 'classnames';
+import { SchemaValidatorConsumer } from '../SchemaValidator';
+import isNil from 'lodash/isNil';
 
 interface IFieldWrapperProps {
   ancestors: string[];
@@ -85,9 +87,15 @@ const useStyles = makeStyles({
       borderTopColor: `${blue[300]}`,
     },
   },
+  errorHighlight: {
+    borderLeftColor: `${red[100]}`,
+    '&:after': {
+      borderTopColor: `${red[100]}`,
+    },
+  },
 });
 
-const SiblingLine = ({ id, index, activeParent, setActiveParent, ancestors }) => {
+const SiblingLine = ({ id, index, activeParent, setActiveParent, ancestors, error = false }) => {
   const classes = useStyles({ index: ancestors.length - 1 - index });
   if (index + 1 === ancestors.length - 1) {
     return (
@@ -96,6 +104,7 @@ const SiblingLine = ({ id, index, activeParent, setActiveParent, ancestors }) =>
         onMouseLeave={() => setActiveParent(null)}
         className={classnames(`${classes.root} ${classes.innerMostSiblingConnector}`, {
           [classes.highlight]: id === activeParent,
+          [classes.errorHighlight]: error,
         })}
         key={id}
         data-ancestor-id={id}
@@ -108,6 +117,7 @@ const SiblingLine = ({ id, index, activeParent, setActiveParent, ancestors }) =>
       onMouseLeave={() => setActiveParent(null)}
       className={classnames(classes.root, {
         [classes.highlight]: id === activeParent,
+        [classes.errorHighlight]: error,
       })}
       data-ancestor-id={id}
       key={index}
@@ -122,7 +132,6 @@ const FieldWrapperBase = ({
   className,
 }: IFieldWrapperProps) => {
   const spacing = ancestors.length * INDENTATION_SPACING;
-  const spacingMinusLeftMargin = spacing - 10;
   const firstColumn = `calc(100% - 75px)`;
   const secondColumn = `75px`;
   let customStyles = {
@@ -140,26 +149,33 @@ const FieldWrapperBase = ({
   return (
     <CustomizedPaper elevation={2} style={customStyles} className={className}>
       <If condition={ancestors.length > 1}>
-        <SiblingCommunicationConsumer>
-          {({ activeParent, setActiveParent }) => {
+        <SchemaValidatorConsumer>
+          {({ errorMap }) => {
             return (
-              <SiblingsWrapper>
-                {ancestors.slice(1).map((id, index) => {
+              <SiblingCommunicationConsumer>
+                {({ activeParent, setActiveParent }) => {
                   return (
-                    <SiblingLine
-                      key={id}
-                      id={id}
-                      activeParent={activeParent}
-                      setActiveParent={setActiveParent}
-                      ancestors={ancestors}
-                      index={index}
-                    />
+                    <SiblingsWrapper>
+                      {ancestors.slice(1).map((id, index) => {
+                        return (
+                          <SiblingLine
+                            key={id}
+                            id={id}
+                            activeParent={activeParent}
+                            setActiveParent={setActiveParent}
+                            ancestors={ancestors}
+                            index={index}
+                            error={!isNil(errorMap[id])}
+                          />
+                        );
+                      })}
+                    </SiblingsWrapper>
                   );
-                })}
-              </SiblingsWrapper>
+                }}
+              </SiblingCommunicationConsumer>
             );
           }}
-        </SiblingCommunicationConsumer>
+        </SchemaValidatorConsumer>
       </If>
       {children}
     </CustomizedPaper>

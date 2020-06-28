@@ -21,6 +21,7 @@ import {
   SchemaTree,
   INode,
   ISchemaTree,
+  IOnChangeReturnType,
 } from 'components/AbstractWidget/SchemaEditor/Context/SchemaTree';
 import { ISchemaType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 import {
@@ -51,7 +52,11 @@ const styles = (theme): StyleRules => {
 
 interface ISchemaEditorProps extends WithStyles<typeof styles> {
   schema: ISchemaType;
-  onChange: (props: { tree: INode; flat: IFlattenRowType[]; avroSchema: ISchemaType }) => void;
+  onChange: (props: {
+    tree: INode;
+    flat: IFlattenRowType[];
+    avroSchema: ISchemaType;
+  }) => IOnChangeReturnType;
 }
 
 interface ISchemaEditorState {
@@ -84,7 +89,7 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
     fieldId: IFieldIdentifier,
     onChangePayload: IOnChangePayload
   ) => {
-    const updatedIndex = this.schema.onChange(fieldId, index, onChangePayload);
+    const { fieldIdToFocus, fieldIndex } = this.schema.onChange(fieldId, index, onChangePayload);
     const newFlat = this.schema
       .getFlatSchema()
       .map((row) => row.id)
@@ -102,9 +107,12 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
       avroSchema: this.schema.getAvroSchema(),
     });
     if (typeof validate === 'function' && onChangePayload.value !== '') {
-      validate(fieldId.id, this.schema.getSchemaTree());
+      validate(
+        fieldIndex ? this.schema.getFlatSchema()[fieldIndex] : fieldId,
+        this.schema.getSchemaTree()
+      );
     }
-    return updatedIndex;
+    return { fieldIdToFocus };
   };
   public render() {
     const { flat } = this.state;

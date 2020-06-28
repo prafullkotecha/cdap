@@ -27,7 +27,7 @@ const MapWrapper = withStyles(
     return {
       root: {
         display: 'grid',
-        gridTemplateColumns: '25px 100px',
+        gridTemplateColumns: '35px 100px',
         alignItems: 'center',
         gridGap: '10px',
       },

@@ -22,6 +22,7 @@ import {
 } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { FieldRow } from 'components/AbstractWidget/SchemaEditor/FieldsList/FieldRow';
 import { SiblingCommunicationProvider } from 'components/AbstractWidget/SchemaEditor/FieldWrapper/SiblingCommunicationContext';
+import { IOnChangeReturnType } from 'components/AbstractWidget/SchemaEditor/Context/SchemaTree';
 import VirtualScroll from 'components/VirtualScroll';
 
 interface IFieldsListState {
@@ -35,7 +36,7 @@ interface IFieldsListProps {
     index: number,
     id: IFieldIdentifier,
     onChangePayload: IOnChangePayload
-  ) => number | void;
+  ) => IOnChangeReturnType;
 }
 
 export class FieldsList extends React.Component<IFieldsListProps, IFieldsListState> {
@@ -58,45 +59,32 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
   }
 
   public onChange = (index: number, field: IFieldIdentifier, onChangePayload: IOnChangePayload) => {
-    const updatedIndex = this.props.onChange(index, field, onChangePayload);
-    if (typeof updatedIndex === 'string') {
+    const { fieldIdToFocus } = this.props.onChange(index, field, onChangePayload);
+    if (typeof fieldIdToFocus === 'string') {
       this.setState({
-        currentRowToFocus: updatedIndex,
+        currentRowToFocus: fieldIdToFocus,
       });
     }
   };
 
   public renderList = (visibleNodeCount, startNode) => {
     console.log('calling : ');
+    const { currentRowToFocus } = this.state;
     return this.state.rows
       .slice(1)
       .slice(startNode, startNode + visibleNodeCount)
       .map((field, i) => {
         return (
           <FieldRow
-            autoFocus={this.state.currentRowToFocus === field.id}
+            autoFocus={currentRowToFocus === field.id}
             key={field.id}
             field={field}
-            onChange={this.onChange.bind(null, i + 1)}
+            onChange={this.onChange.bind(null, startNode + i + 1)}
           />
         );
       });
   };
 
-  public render1() {
-    return (
-      <SiblingCommunicationProvider>
-        {this.state.rows.map((field, i) => (
-          <FieldRow
-            autoFocus={this.state.currentRowToFocus === field.id}
-            key={field.id}
-            field={field}
-            onChange={this.onChange.bind(null, i)}
-          />
-        ))}
-      </SiblingCommunicationProvider>
-    );
-  }
   public render() {
     return (
       <SiblingCommunicationProvider>

@@ -20,7 +20,6 @@ import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/Edit
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 
 const EnumTypeBase = ({
-  ancestors,
   typeProperties,
   onChange,
   onAdd,

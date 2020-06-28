@@ -12,6 +12,7 @@
     "importHelpers": false,
     "allowSyntheticDefaultImports": true,
     "lib": [
+      "webworker",
       "es2015",
       "dom",
       "es2017"

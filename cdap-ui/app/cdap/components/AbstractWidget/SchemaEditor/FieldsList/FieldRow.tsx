@@ -38,7 +38,7 @@ const styles = (theme): StyleRules => {
   return {
     errorIcon: {
       position: 'absolute',
-      right: '-22px', // the size of the icon is 18px pushing it to right a little bit
+      right: '0',
       color: theme.palette.red[200],
     },
     erroredRow: {
@@ -134,7 +134,6 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
       case 'record-field-complex-type-root':
         return (
           <FieldType
-            ancestors={this.props.field.ancestors}
             name={this.props.field.name}
             type={this.props.field.type}
             nullable={this.props.field.nullable}
@@ -149,7 +148,6 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
       case 'array-complex-type-root':
         return (
           <ArrayType
-            ancestors={this.props.field.ancestors}
             type={this.props.field.type}
             nullable={this.props.field.nullable}
             onChange={this.onChange}
@@ -161,7 +159,6 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
       case 'enum-symbol':
         return (
           <EnumType
-            ancestors={this.props.field.ancestors}
             typeProperties={this.props.field.typeProperties}
             onChange={this.onChange}
             onAdd={this.onAdd}
@@ -175,7 +172,6 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
       case 'map-values-simple-type':
         return (
           <MapType
-            ancestors={this.props.field.ancestors}
             internalType={this.props.field.internalType}
             type={this.props.field.type}
             nullable={this.props.field.nullable}
@@ -189,7 +185,6 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
       case 'union-complex-type-root':
         return (
           <UnionType
-            ancestors={this.props.field.ancestors}
             type={this.props.field.type}
             nullable={this.props.field.nullable}
             onChange={this.onChange}
@@ -212,9 +207,8 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
     }
     return (
       <SchemaValidatorConsumer>
-        {({ error, id }) => {
-          const hasError =
-            id === this.props.field.id && typeof error === 'string' && error.length > 0;
+        {({ errorMap = {} }) => {
+          const hasError = errorMap.hasOwnProperty(this.props.field.id);
           return (
             <FieldWrapper
               ancestors={ancestors}
@@ -224,7 +218,11 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
             >
               <React.Fragment>
                 <If condition={hasError}>
-                  <Tooltip classes={{ tooltip: classes.tooltip }} title={error} placement="right">
+                  <Tooltip
+                    classes={{ tooltip: classes.tooltip }}
+                    title={errorMap[this.props.field.id]}
+                    placement="right"
+                  >
                     <ErrorIcon className={classes.errorIcon} />
                   </Tooltip>
                 </If>

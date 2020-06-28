@@ -16,60 +16,94 @@
 
 import * as React from 'react';
 import cdapavsc from 'services/cdapavscwrapper';
-import { SchemaGenerator } from 'components/AbstractWidget/SchemaEditor/Context/SchemaGenerator';
+import {
+  SchemaGenerator,
+  generateSchemaFromComplexType,
+} from 'components/AbstractWidget/SchemaEditor/Context/SchemaGenerator';
 import { ISchemaType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 import isNil from 'lodash/isNil';
+import cloneDeep from 'lodash/cloneDeep';
+import { INode } from '../Context/SchemaTree';
+import { IFlattenRowType } from '../EditorTypes';
 
 interface ISchemaValidatorProviderBaseState {
   id: string;
   time: number;
   error: string;
 }
-interface ISchemaValidatorContext extends ISchemaValidatorProviderBaseState {
+interface ISchemaValidatorContext {
   validate: (id: string, avroSchema: ISchemaType) => ISchemaValidatorProviderBaseState;
+  errorMap: Record<string, ISchemaValidatorProviderBaseState>;
 }
 const SchemaValidatorContext = React.createContext<ISchemaValidatorContext>({
-  id: null,
-  time: null,
-  error: null,
   validate: null,
+  errorMap: {},
 });
 const SchemaValidatorConsumer = SchemaValidatorContext.Consumer;
 
 class SchemaValidatorProvider extends React.Component {
   public defaultState = {
-    id: null,
-    time: null,
-    error: null,
+    errorMap: {},
   };
 
-  private validate = (id, schemaTree) => {
-    const avroSchema = SchemaGenerator(schemaTree);
-    console.log('validating...');
-    try {
-      const validSchema = cdapavsc.parse(avroSchema.schema, { wrapUnions: true });
-    } catch (e) {
-      if (!isNil(this.state.error) && e.message === this.state.error) {
-        return;
+  private isSubTreeValidAvroSchema = (field: IFlattenRowType, schemaTree) => {
+    const { id, ancestors } = field;
+    if (!ancestors || (Array.isArray(ancestors) && !ancestors.length)) {
+      return;
+    }
+    if (ancestors.length === 1) {
+      try {
+        const entireSchema = SchemaGenerator(schemaTree);
+        cdapavsc.parse(entireSchema.schema, { wrapUnions: true });
+      } catch (e) {
+        return { error: e.message, fieldIdToShowError: id };
       }
-      this.setState({
-        id,
-        time: Date.now(),
-        error: e.message,
-      });
-      console.log('bonkers: ', e);
       return;
     }
-    this.reset();
+    const validateSchema = (tree) => {
+      const avroSchema = generateSchemaFromComplexType(tree.type, tree, tree.nullable);
+      try {
+        cdapavsc.parse(avroSchema, { wrapUnions: true });
+      } catch (e) {
+        return { error: e.message, fieldIdToShowError: tree.id };
+      }
+    };
+    const goToLowestParent = (parents, tree) => {
+      if (parents.length === 1) {
+        return validateSchema(tree.children[parents[0]]);
+      }
+      return goToLowestParent(parents.slice(1), tree.children[parents[0]]);
+    };
+    return goToLowestParent(ancestors.slice(1), schemaTree);
   };
 
-  private reset = () => {
-    if (this.state.error === null && this.state.id === null) {
+  private validateSpecificField = (field, schemaTree) => {
+    const errorObj = this.isSubTreeValidAvroSchema(field, schemaTree);
+    if (!errorObj) {
+      const { errorMap } = this.state;
+      field.ancestors.forEach((ancestorId) => {
+        if (errorMap.hasOwnProperty(ancestorId)) {
+          delete errorMap[ancestorId];
+        }
+      });
+      if (errorMap.hasOwnProperty(field.id)) {
+        delete errorMap[field.id];
+      }
+      this.setState({ errorMap });
       return;
     }
+    const { fieldIdToShowError, error } = errorObj;
     this.setState({
-      ...this.defaultState,
+      errorMap: {
+        ...this.state.errorMap,
+        [fieldIdToShowError]: error,
+      },
     });
+  };
+
+  private validate = (currentFieldId, schemaTree) => {
+    console.log('validating...');
+    this.validateSpecificField(currentFieldId, schemaTree);
   };
 
   public state = {

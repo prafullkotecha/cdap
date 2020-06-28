@@ -20,6 +20,7 @@ import {
 } from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
 import { ISchemaType, IEnumFieldBase } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 import uuidV4 from 'uuid/v4';
+import cdapavsc from 'services/cdapavscwrapper';
 
 const isTypeLogical = ({ type }) => {
   switch (type) {
@@ -166,7 +167,11 @@ function generateRecordType(children: IOrderedChildren, nullable: boolean) {
       } else {
         finalType.fields.push({
           name,
-          type: generateFieldsFromRecord(currentChild),
+          type: generateSchemaFromComplexType(
+            currentChild.type,
+            currentChild,
+            currentChild.nullable
+          ),
         });
       }
     }
@@ -253,4 +258,4 @@ function SchemaGenerator(schemaTree: INode) {
   return avroSchema;
 }
 
-export { SchemaGenerator };
+export { SchemaGenerator, generateSchemaFromComplexType };

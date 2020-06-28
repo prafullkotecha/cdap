@@ -21,16 +21,8 @@ import Select from 'components/AbstractWidget/FormInputs/Select';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
 
-const UnionTypeBase = ({
-  ancestors,
-  type,
-  nullable,
-  onChange,
-  onAdd,
-  autoFocus,
-}: IFieldTypeBaseProps) => {
+const UnionTypeBase = ({ type, onChange, onAdd, onRemove, autoFocus }: IFieldTypeBaseProps) => {
   const [fieldType, setFieldType] = React.useState(type);
-  const [fieldNullable, setFieldNullable] = React.useState(nullable);
   const inputEle = React.useRef(null);
   React.useEffect(() => {
     if (autoFocus) {
@@ -52,7 +44,7 @@ const UnionTypeBase = ({
           inputRef={(ref) => (inputEle.current = ref)}
         />
       </SingleColumnWrapper>
-      <RowButtons onAdd={onAdd} />
+      <RowButtons onAdd={onAdd} onRemove={onRemove} />
     </React.Fragment>
   );
 };

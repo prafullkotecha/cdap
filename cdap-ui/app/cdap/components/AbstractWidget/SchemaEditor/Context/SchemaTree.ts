@@ -140,7 +140,12 @@ interface ISchemaTree {
     fieldId: IFieldIdentifier,
     currentIndex: number,
     onChangePayload: IOnChangePayload
-  ) => void;
+  ) => IOnChangeReturnType;
+}
+
+interface IOnChangeReturnType {
+  fieldIdToFocus?: string;
+  fieldIndex?: number;
 }
 
 class SchemaTreeBase implements ISchemaTree {
@@ -318,7 +323,7 @@ class SchemaTreeBase implements ISchemaTree {
     };
   };
 
-  private remove = (currentIndex: number) => {
+  private remove = (currentIndex: number): IOnChangeReturnType => {
     const matchingEntry = this.flatTree[currentIndex];
     const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
     const { tree, removedField, newlyAddedField } = this.removeFromTree(this.schemaTree, idObj);
@@ -333,7 +338,7 @@ class SchemaTreeBase implements ISchemaTree {
       ...newFlatSubTree,
       ...this.flatTree.slice(currentIndex + 1 + childrenInBranch),
     ];
-    return this.flatTree[currentIndex];
+    return { fieldIdToFocus: this.flatTree[currentIndex - 1].id, fieldIndex: currentIndex - 1 };
   };
 
   private updateTree = (
@@ -384,7 +389,10 @@ class SchemaTreeBase implements ISchemaTree {
     };
   };
 
-  private update = (currentIndex: number, { property, value }: Partial<IOnChangePayload>) => {
+  private update = (
+    currentIndex: number,
+    { property, value }: Partial<IOnChangePayload>
+  ): IOnChangeReturnType => {
     this.flatTree[currentIndex][property] = value;
     const matchingEntry = this.flatTree[currentIndex];
     let result: { tree: INode; childrenCount: number; newTree: INode };
@@ -406,11 +414,12 @@ class SchemaTreeBase implements ISchemaTree {
     }
     // newFlatSubTree will be of length 1 for simple type changes.
     if (Array.isArray(newFlatSubTree) && newFlatSubTree.length > 1) {
-      return this.flatTree[currentIndex + 1].id;
+      return { fieldIdToFocus: this.flatTree[currentIndex + 1].id, fieldIndex: currentIndex + 1 };
     }
+    return {};
   };
 
-  private add = (currentIndex) => {
+  private add = (currentIndex): IOnChangeReturnType => {
     const matchingEntry = this.flatTree[currentIndex];
     let result: { tree: INode; newTree: INode; currentField: INode };
     let newFlatSubTree: IFlattenRowType[];
@@ -424,14 +433,17 @@ class SchemaTreeBase implements ISchemaTree {
       ...newFlatSubTree,
       ...this.flatTree.slice(currentIndex + currentFieldBranchCount + 1),
     ];
-    return this.flatTree[currentIndex + currentFieldBranchCount + 1].id;
+    return {
+      fieldIdToFocus: this.flatTree[currentIndex + currentFieldBranchCount + 1].id,
+      fieldIndex: currentIndex + currentFieldBranchCount + 1,
+    };
   };
 
   public onChange = (
     fieldId: IFieldIdentifier,
     currentIndex: number,
     { type, property, value }: IOnChangePayload
-  ) => {
+  ): IOnChangeReturnType => {
     if (isNil(currentIndex) || currentIndex === -1) {
       return;
     }
@@ -451,4 +463,4 @@ function SchemaTree(avroSchema) {
     getInstance: () => schemaTreeInstance,
   };
 }
-export { SchemaTree, INode, ISchemaTree };
+export { SchemaTree, INode, ISchemaTree, IOnChangeReturnType };
