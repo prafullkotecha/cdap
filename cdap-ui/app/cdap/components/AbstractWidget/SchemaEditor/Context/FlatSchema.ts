@@ -17,13 +17,15 @@
 import isObject from 'lodash/isObject';
 import { INode } from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
 import { IFlattenRowType } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
+import { ISchemaTreeOptions } from 'components/AbstractWidget/SchemaEditor/Context/SchemaTree';
 
-function FlatSchema(schemaTree: INode, ancestors = []) {
+function FlatSchema(schemaTree: INode, options: ISchemaTreeOptions, ancestors = []) {
   const result: IFlattenRowType[] = [];
   if (!schemaTree) {
     return [];
   }
   const { internalType, name, id, children, type, typeProperties, nullable } = schemaTree;
+  const hasChildren = isObject(children) && Object.keys(children).length;
   result.push({
     internalType,
     name,
@@ -32,18 +34,19 @@ function FlatSchema(schemaTree: INode, ancestors = []) {
     typeProperties,
     ancestors,
     nullable,
+    collapsed: hasChildren ? options.collapseAll : null,
   });
-  if (isObject(children) && Object.keys(children).length) {
+  if (hasChildren) {
     let iterable;
     if (Array.isArray(children.order) && children.order.length) {
       iterable = children.order;
       for (const childId of iterable) {
-        result.push(...FlatSchema(children[childId], ancestors.concat(id)));
+        result.push(...FlatSchema(children[childId], options, ancestors.concat(id)));
       }
     } else {
       iterable = children;
       for (const [_, value] of Object.entries<INode>(iterable)) {
-        result.push(...FlatSchema(value, ancestors.concat(id)));
+        result.push(...FlatSchema(value, options, ancestors.concat(id)));
       }
     }
   }

@@ -39,6 +39,8 @@ interface IFlattenRowType {
   nullable?: boolean;
   ancestors: string[];
   typeProperties?: Record<string, any>;
+  collapsed?: boolean;
+  hidden?: boolean;
 }
 
 interface IFieldIdentifier {
@@ -61,7 +63,7 @@ interface IFieldTypeBaseProps {
 interface IOnChangePayload {
   property?: string;
   value?: string;
-  type: 'update' | 'add' | 'remove';
+  type: 'update' | 'add' | 'remove' | 'collapse';
 }
 
 export {

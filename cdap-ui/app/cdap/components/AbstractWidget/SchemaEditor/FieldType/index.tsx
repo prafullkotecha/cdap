@@ -47,32 +47,36 @@ const FieldTypeBase = ({
     setFieldNullable(checked);
     onChange('nullable', checked);
   };
+  const onChangeHandler = (newValue) => {
+    setFieldName(newValue);
+    onChange('name', newValue);
+  };
+  const onKeyPressHandler = (event: React.KeyboardEvent) => {
+    if (event.nativeEvent.keyCode === 13) {
+      onAdd();
+    }
+  };
+  const onTypeChangeHandler = (newValue) => {
+    setFieldType(newValue);
+    onChange('type', newValue);
+  };
+  const inputRef = (ref) => {
+    inputEle.current = ref;
+  };
   return (
     <React.Fragment>
       <FieldInputWrapper>
         <TextBox
-          onChange={(newValue) => {
-            setFieldName(newValue);
-            onChange('name', newValue);
-          }}
-          onKeyPress={(event: React.KeyboardEvent) => {
-            if (event.nativeEvent.keyCode === 13) {
-              onAdd();
-            }
-          }}
+          onChange={onChangeHandler}
+          onKeyPress={onKeyPressHandler}
           widgetProps={{ placeholder: 'name' }}
           value={fieldName}
           autoFocus={autoFocus}
-          inputRef={(ref) => {
-            inputEle.current = ref;
-          }}
+          inputRef={inputRef}
         />
         <Select
           value={fieldType}
-          onChange={(newValue) => {
-            setFieldType(newValue);
-            onChange('type', newValue);
-          }}
+          onChange={onTypeChangeHandler}
           widgetProps={{ options: schemaTypes, dense: true }}
         />
       </FieldInputWrapper>

@@ -68,7 +68,8 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
   private schema: ISchemaTree = null;
   constructor(props) {
     super(props);
-    this.schema = SchemaTree(this.props.schema).getInstance();
+    const { options } = props;
+    this.schema = SchemaTree(this.props.schema, options).getInstance();
     this.state = {
       flat: this.schema.getFlatSchema(),
       tree: this.schema.getSchemaTree(),

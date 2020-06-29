@@ -47,6 +47,7 @@ import {
 import { FlatSchema } from 'components/AbstractWidget/SchemaEditor/Context/FlatSchema';
 import { ISchemaType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 import { SchemaGenerator } from 'components/AbstractWidget/SchemaEditor/Context/SchemaGenerator';
+import isObject from 'lodash/isObject';
 
 function getInternalType(tree: INode) {
   const hasChildren = tree.children ? Object.keys(tree.children).length : 0;
@@ -132,6 +133,10 @@ const initTypeProperties = (tree: INode) => {
   }
 };
 
+interface ISchemaTreeOptions {
+  collapseAll: boolean;
+}
+
 interface ISchemaTree {
   getSchemaTree: () => INode;
   getFlatSchema: () => IFlattenRowType[];
@@ -146,14 +151,17 @@ interface ISchemaTree {
 interface IOnChangeReturnType {
   fieldIdToFocus?: string;
   fieldIndex?: number;
+  nodeDepth?: number;
 }
 
 class SchemaTreeBase implements ISchemaTree {
   private schemaTree: INode;
   private flatTree: IFlattenRowType[];
-  constructor(avroSchema) {
+  private options: ISchemaTreeOptions;
+  constructor(avroSchema, options: ISchemaTreeOptions) {
     this.schemaTree = parseSchema(avroSchema);
-    this.flatTree = FlatSchema(this.schemaTree);
+    this.flatTree = FlatSchema(this.schemaTree, options);
+    this.options = options;
   }
 
   public getSchemaTree = () => this.schemaTree;
@@ -167,6 +175,7 @@ class SchemaTreeBase implements ISchemaTree {
     order = [...order.slice(0, currentIndexOfChild), id, ...order.slice(currentIndexOfChild)];
     return { id, order };
   };
+
   private addNewEnumSymbol = (tree: INode, fieldId: IFieldIdentifier) => {
     if (!tree.children || (tree.children && !Array.isArray(tree.children.order))) {
       return { tree, newTree: undefined, currentField: undefined };
@@ -331,7 +340,7 @@ class SchemaTreeBase implements ISchemaTree {
     const childrenInBranch = branchCount(removedField);
     let newFlatSubTree = [];
     if (newlyAddedField) {
-      newFlatSubTree = FlatSchema(newlyAddedField, matchingEntry.ancestors);
+      newFlatSubTree = FlatSchema(newlyAddedField, this.options, matchingEntry.ancestors);
     }
     this.flatTree = [
       ...this.flatTree.slice(0, currentIndex),
@@ -405,7 +414,7 @@ class SchemaTreeBase implements ISchemaTree {
       ...this.flatTree.slice(currentIndex + result.childrenCount + (!result.newTree ? 0 : 1)),
     ];
     if (result.newTree) {
-      newFlatSubTree = FlatSchema(result.newTree, matchingEntry.ancestors);
+      newFlatSubTree = FlatSchema(result.newTree, this.options, matchingEntry.ancestors);
       this.flatTree = [
         ...this.flatTree.slice(0, currentIndex),
         ...newFlatSubTree,
@@ -425,7 +434,7 @@ class SchemaTreeBase implements ISchemaTree {
     let newFlatSubTree: IFlattenRowType[];
     const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
     result = this.addToTree(this.schemaTree, idObj);
-    newFlatSubTree = FlatSchema(result.newTree, matchingEntry.ancestors);
+    newFlatSubTree = FlatSchema(result.newTree, this.options, matchingEntry.ancestors);
     this.schemaTree = result.tree;
     const currentFieldBranchCount = branchCount(result.currentField);
     this.flatTree = [
@@ -437,6 +446,51 @@ class SchemaTreeBase implements ISchemaTree {
       fieldIdToFocus: this.flatTree[currentIndex + currentFieldBranchCount + 1].id,
       fieldIndex: currentIndex + currentFieldBranchCount + 1,
     };
+  };
+
+  private getFieldObjFromTree = (fieldObj, schemaTree: INode): INode => {
+    if (fieldObj.id === schemaTree.id) {
+      return schemaTree;
+    }
+    if (fieldObj.ancestors.length === 1) {
+      return schemaTree.children[fieldObj.id];
+    }
+    return this.getFieldObjFromTree(
+      { id: fieldObj.id, ancestors: fieldObj.ancestors.slice(1) },
+      schemaTree.children[fieldObj.ancestors[1]]
+    );
+  };
+
+  private collapse = (currentIndex): IOnChangeReturnType => {
+    const matchingEntry = this.flatTree[currentIndex];
+    if (!matchingEntry) {
+      return;
+    }
+    const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
+    const fieldObj = this.getFieldObjFromTree(idObj, this.getSchemaTree());
+    this.flatTree[currentIndex].collapsed = !this.flatTree[currentIndex].collapsed;
+    const nodeDepth = this.calculateNodeDepthMap(fieldObj);
+    for (let i = 1; i <= nodeDepth; i++) {
+      this.flatTree[currentIndex + i].hidden = this.flatTree[currentIndex].collapsed;
+    }
+    return {
+      fieldIdToFocus: currentIndex,
+    };
+  };
+
+  private calculateNodeDepthMap = (tree: INode): number => {
+    let totalDepth = 0;
+    if (isObject(tree.children) && Object.keys(tree.children).length) {
+      for (const childId of Object.keys(tree.children)) {
+        if (childId === 'order') {
+          continue;
+        }
+        totalDepth += 1;
+        const childCount = this.calculateNodeDepthMap(tree.children[childId]);
+        totalDepth += childCount;
+      }
+    }
+    return totalDepth;
   };
 
   public onChange = (
@@ -454,13 +508,28 @@ class SchemaTreeBase implements ISchemaTree {
         return this.add(currentIndex);
       case 'remove':
         return this.remove(currentIndex);
+      case 'collapse':
+        return this.collapse(currentIndex);
     }
   };
 }
-function SchemaTree(avroSchema) {
-  const schemaTreeInstance = new SchemaTreeBase(avroSchema);
+
+const defaultOptions: ISchemaTreeOptions = {
+  collapseAll: false,
+};
+
+function SchemaTree(avroSchema, options: ISchemaTreeOptions = defaultOptions) {
+  if (!options) {
+    options = defaultOptions;
+  } else {
+    options = {
+      ...defaultOptions,
+      ...options,
+    };
+  }
+  const schemaTreeInstance = new SchemaTreeBase(avroSchema, options);
   return {
     getInstance: () => schemaTreeInstance,
   };
 }
-export { SchemaTree, INode, ISchemaTree, IOnChangeReturnType };
+export { SchemaTree, INode, ISchemaTree, IOnChangeReturnType, ISchemaTreeOptions };

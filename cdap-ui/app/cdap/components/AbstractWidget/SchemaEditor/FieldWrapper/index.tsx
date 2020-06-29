@@ -33,6 +33,7 @@ interface IFieldWrapperProps {
   children?: React.ReactNode;
   style?: any;
   className?: any;
+  collapsable?: boolean;
 }
 
 const rowHeight = 28;
@@ -130,16 +131,24 @@ const FieldWrapperBase = ({
   children,
   style = {},
   className,
+  collapsable,
 }: IFieldWrapperProps) => {
   const spacing = ancestors.length * INDENTATION_SPACING;
   const firstColumn = `calc(100% - 75px)`;
   const secondColumn = `75px`;
-  let customStyles = {
+  let customStyles: Partial<CSSStyleDeclaration> = {
     marginLeft: `${spacing}px`,
     gridTemplateColumns: `${firstColumn} ${secondColumn}`,
     width: `calc(100% - ${spacing + 5 /* box shadow */}px)`,
     alignItems: 'center',
   };
+  if (collapsable) {
+    const firstcol = '20px';
+    const secondcol = `calc(100% - (75px + 20px))`;
+    const thirdcol = '75px';
+    customStyles.paddingLeft = '0px';
+    customStyles.gridTemplateColumns = `${firstcol} ${secondcol} ${thirdcol}`;
+  }
   if (style && isObject(style)) {
     customStyles = {
       ...customStyles,

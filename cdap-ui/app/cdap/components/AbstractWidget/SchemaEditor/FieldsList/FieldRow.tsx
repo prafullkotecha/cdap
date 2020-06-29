@@ -33,6 +33,8 @@ import ErrorIcon from '@material-ui/icons/ErrorOutline';
 import classnames from 'classnames';
 import withStyles, { WithStyles, StyleRules } from '@material-ui/core/styles/withStyles';
 import Tooltip from '@material-ui/core/Tooltip';
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 
 const styles = (theme): StyleRules => {
   return {
@@ -128,6 +130,14 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
     }
   };
 
+  public onToggleCollapse = () => {
+    const { onChange, field } = this.props;
+    const { id, ancestors } = field;
+    if (onChange) {
+      onChange({ id, ancestors }, { type: 'collapse' });
+    }
+  };
+
   public RenderSubType = (field) => {
     switch (field.internalType) {
       case 'record-field-simple-type':
@@ -215,6 +225,7 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
               className={classnames({
                 [classes.erroredRow]: hasError,
               })}
+              collapsable={typeof this.props.field.collapsed === 'boolean'}
             >
               <React.Fragment>
                 <If condition={hasError}>
@@ -225,6 +236,14 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
                   >
                     <ErrorIcon className={classes.errorIcon} />
                   </Tooltip>
+                </If>
+                <If condition={typeof this.props.field.collapsed === 'boolean'}>
+                  <If condition={this.props.field.collapsed}>
+                    <KeyboardArrowUpIcon onClick={this.onToggleCollapse} />
+                  </If>
+                  <If condition={!this.props.field.collapsed}>
+                    <KeyboardArrowDownIcon onClick={this.onToggleCollapse} />
+                  </If>
                 </If>
                 {this.RenderSubType(this.props.field)}
               </React.Fragment>

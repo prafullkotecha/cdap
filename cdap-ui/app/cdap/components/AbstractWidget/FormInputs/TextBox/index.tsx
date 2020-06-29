@@ -32,6 +32,7 @@ interface ITextBoxProps extends IWidgetProps<ITextBoxWidgetProps> {
 const TextBox: React.FC<ITextBoxProps> = ({
   value,
   onChange,
+  onBlur,
   widgetProps,
   disabled,
   dataCy,
@@ -45,6 +46,12 @@ const TextBox: React.FC<ITextBoxProps> = ({
       onChange(v);
     }
   };
+  const onBlurHandler = (event: React.FocusEvent<HTMLInputElement>) => {
+    const v = event.target.value;
+    if (typeof onBlur === 'function') {
+      onBlur(v);
+    }
+  };
 
   const placeholder = objectQuery(widgetProps, 'placeholder');
   return (
@@ -52,6 +59,7 @@ const TextBox: React.FC<ITextBoxProps> = ({
       fullWidth
       value={value}
       onChange={onChangeHandler}
+      onBlur={onBlurHandler}
       onKeyPress={onKeyPress}
       placeholder={placeholder}
       readOnly={disabled}
@@ -64,5 +72,5 @@ const TextBox: React.FC<ITextBoxProps> = ({
   );
 };
 
-export default TextBox;
+export default React.memo(TextBox);
 (TextBox as any).propTypes = WIDGET_PROPTYPES;

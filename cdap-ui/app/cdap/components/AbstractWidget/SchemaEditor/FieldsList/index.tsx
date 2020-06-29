@@ -74,6 +74,9 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
       .slice(1)
       .slice(startNode, startNode + visibleNodeCount)
       .map((field, i) => {
+        if (field.hidden) {
+          return null;
+        }
         return (
           <FieldRow
             autoFocus={currentRowToFocus === field.id}
@@ -86,10 +89,11 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
   };
 
   public render() {
+    const itemCount = this.state.rows.filter((field) => !field.hidden).length;
     return (
       <SiblingCommunicationProvider>
         <VirtualScroll
-          itemCount={() => this.state.rows.length + 2}
+          itemCount={() => itemCount}
           visibleChildCount={FieldsList.visibleNodeCount}
           childHeight={FieldsList.heightOfRow}
           renderList={this.renderList.bind(this)}
