@@ -40,9 +40,9 @@ interface IFieldsListProps {
 }
 
 export class FieldsList extends React.Component<IFieldsListProps, IFieldsListState> {
-  public static visibleNodeCount = 21;
-  public static childrenUnderFold = 50;
-  public static heightOfRow = 32;
+  public static visibleNodeCount = 20;
+  public static childrenUnderFold = 5;
+  public static heightOfRow = 34;
 
   public state: IFieldsListState = {
     rows: this.props.value || [],
@@ -72,6 +72,7 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
     const { currentRowToFocus } = this.state;
     return this.state.rows
       .slice(1)
+      .filter((row) => !row.hidden)
       .slice(startNode, startNode + visibleNodeCount)
       .map((field, i) => {
         if (field.hidden) {

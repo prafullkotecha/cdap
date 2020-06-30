@@ -142,8 +142,8 @@ interface ISchemaTree {
   getFlatSchema: () => IFlattenRowType[];
   getAvroSchema: () => ISchemaType;
   onChange: (
-    fieldId: IFieldIdentifier,
     currentIndex: number,
+    fieldId: IFieldIdentifier,
     onChangePayload: IOnChangePayload
   ) => IOnChangeReturnType;
 }
@@ -461,31 +461,33 @@ class SchemaTreeBase implements ISchemaTree {
     );
   };
 
-  private collapse = (currentIndex): IOnChangeReturnType => {
-    const matchingEntry = this.flatTree[currentIndex];
+  private collapse = (fieldId: IFieldIdentifier): IOnChangeReturnType => {
+    const matchingIndex = this.flatTree.findIndex((row) => row.id === fieldId.id);
+    const matchingEntry = this.flatTree[matchingIndex];
     if (!matchingEntry) {
-      return;
+      return {};
     }
     const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
     const fieldObj = this.getFieldObjFromTree(idObj, this.getSchemaTree());
-    this.flatTree[currentIndex].collapsed = !this.flatTree[currentIndex].collapsed;
+    this.flatTree[matchingIndex].collapsed = !this.flatTree[matchingIndex].collapsed;
     const nodeDepth = this.calculateNodeDepthMap(fieldObj);
     for (let i = 1; i <= nodeDepth; i++) {
-      this.flatTree[currentIndex + i].hidden = this.flatTree[currentIndex].collapsed;
+      if (typeof this.flatTree[matchingIndex + i].collapsed === 'boolean') {
+        this.flatTree[matchingIndex + i].collapsed = this.flatTree[matchingIndex].collapsed;
+      }
+      this.flatTree[matchingIndex + i].hidden = this.flatTree[matchingIndex].collapsed;
     }
-    return {
-      fieldIdToFocus: currentIndex,
-    };
+    return {};
   };
 
   private calculateNodeDepthMap = (tree: INode): number => {
     let totalDepth = 0;
     if (isObject(tree.children) && Object.keys(tree.children).length) {
+      totalDepth += Object.keys(tree.children).filter((c) => c !== 'order').length;
       for (const childId of Object.keys(tree.children)) {
         if (childId === 'order') {
           continue;
         }
-        totalDepth += 1;
         const childCount = this.calculateNodeDepthMap(tree.children[childId]);
         totalDepth += childCount;
       }
@@ -494,8 +496,8 @@ class SchemaTreeBase implements ISchemaTree {
   };
 
   public onChange = (
-    fieldId: IFieldIdentifier,
     currentIndex: number,
+    fieldId: IFieldIdentifier,
     { type, property, value }: IOnChangePayload
   ): IOnChangeReturnType => {
     if (isNil(currentIndex) || currentIndex === -1) {
@@ -509,7 +511,7 @@ class SchemaTreeBase implements ISchemaTree {
       case 'remove':
         return this.remove(currentIndex);
       case 'collapse':
-        return this.collapse(currentIndex);
+        return this.collapse(fieldId);
     }
   };
 }

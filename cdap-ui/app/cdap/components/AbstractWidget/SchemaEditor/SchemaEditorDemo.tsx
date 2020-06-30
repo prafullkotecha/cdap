@@ -52,8 +52,12 @@ class SchemaEditorDemoBase extends React.Component<ISchemaEditorDemoBaseProps> {
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
+        let schema = JSON.parse(evt.target.result as any);
+        if (Array.isArray(schema)) {
+          schema = schema[0];
+        }
         this.setState({
-          schema: JSON.parse(evt.target.result as any),
+          schema,
           file: e[0],
           error: null,
         });

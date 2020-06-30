@@ -78,14 +78,13 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
       tree: this.schema.getSchemaTree(),
     });
   }
-
   public onChange = (
     validate,
     index: number,
     fieldId: IFieldIdentifier,
     onChangePayload: IOnChangePayload
   ) => {
-    const { fieldIdToFocus, fieldIndex } = this.schema.onChange(fieldId, index, onChangePayload);
+    const { fieldIdToFocus, fieldIndex } = this.schema.onChange(index, fieldId, onChangePayload);
     const newFlat = this.schema
       .getFlatSchema()
       .map((row) => row.id)

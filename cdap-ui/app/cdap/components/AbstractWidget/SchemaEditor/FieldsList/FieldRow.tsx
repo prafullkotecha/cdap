@@ -34,7 +34,7 @@ import classnames from 'classnames';
 import withStyles, { WithStyles, StyleRules } from '@material-ui/core/styles/withStyles';
 import Tooltip from '@material-ui/core/Tooltip';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
+import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 
 const styles = (theme): StyleRules => {
   return {
@@ -239,7 +239,7 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
                 </If>
                 <If condition={typeof this.props.field.collapsed === 'boolean'}>
                   <If condition={this.props.field.collapsed}>
-                    <KeyboardArrowUpIcon onClick={this.onToggleCollapse} />
+                    <KeyboardArrowRightIcon onClick={this.onToggleCollapse} />
                   </If>
                   <If condition={!this.props.field.collapsed}>
                     <KeyboardArrowDownIcon onClick={this.onToggleCollapse} />
