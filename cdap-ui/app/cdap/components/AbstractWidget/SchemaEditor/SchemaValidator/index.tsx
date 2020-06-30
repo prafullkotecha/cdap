@@ -21,9 +21,6 @@ import {
   generateSchemaFromComplexType,
 } from 'components/AbstractWidget/SchemaEditor/Context/SchemaGenerator';
 import { ISchemaType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
-import isNil from 'lodash/isNil';
-import cloneDeep from 'lodash/cloneDeep';
-import { INode } from '../Context/SchemaTree';
 import { IFlattenRowType } from '../EditorTypes';
 
 interface ISchemaValidatorProviderBaseState {

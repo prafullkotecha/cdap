@@ -16,11 +16,18 @@
 
 import * as React from 'react';
 import { FieldInputWrapper } from 'components/AbstractWidget/SchemaEditor/FieldWrapper';
-import TextBox from 'components/AbstractWidget/FormInputs/TextBox';
 import Select from 'components/AbstractWidget/FormInputs/Select';
 import { schemaTypes } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
+import TextboxOnValium from 'components/TextboxOnValium';
+import makeStyles from '@material-ui/core/styles/makeStyles';
+
+const useStyles = makeStyles({
+  textbox: {
+    border: 0,
+  },
+});
 
 const FieldTypeBase = ({
   name,
@@ -35,6 +42,7 @@ const FieldTypeBase = ({
   const [fieldType, setFieldType] = React.useState(type);
   const [fieldNullable, setFieldNullable] = React.useState(nullable);
   const inputEle = React.useRef(null);
+  const classes = useStyles();
   React.useEffect(() => {
     if (autoFocus) {
       if (inputEle.current) {
@@ -47,15 +55,15 @@ const FieldTypeBase = ({
     setFieldNullable(checked);
     onChange('nullable', checked);
   };
-  const onChangeHandler = (newValue) => {
+  const onChangeHandler = (newValue, _, keyPressKeyCode) => {
+    if (keyPressKeyCode === 13) {
+      onAdd();
+      return;
+    }
     setFieldName(newValue);
     onChange('name', newValue);
   };
-  const onKeyPressHandler = (event: React.KeyboardEvent) => {
-    if (event.nativeEvent.keyCode === 13) {
-      onAdd();
-    }
-  };
+
   const onTypeChangeHandler = (newValue) => {
     setFieldType(newValue);
     onChange('type', newValue);
@@ -66,13 +74,13 @@ const FieldTypeBase = ({
   return (
     <React.Fragment>
       <FieldInputWrapper>
-        <TextBox
-          onChange={onChangeHandler}
-          onKeyPress={onKeyPressHandler}
-          widgetProps={{ placeholder: 'name' }}
+        <TextboxOnValium
+          className={classes.textbox}
           value={fieldName}
-          autoFocus={autoFocus}
+          onChange={onChangeHandler}
+          placeholder="Field name"
           inputRef={inputRef}
+          onKeyUp={() => ({})}
         />
         <Select
           value={fieldType}

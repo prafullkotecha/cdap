@@ -37,15 +37,9 @@ import {
 
 const styles = (theme): StyleRules => {
   return {
-    container: {
-      height: 'auto',
-      display: 'grid',
-      gridTemplateColumns: '34% ',
-    },
     schemaContainer: {
-      width: 'auto',
-      height: 'auto',
-      maxWidth: '400px',
+      width: '100%',
+      height: '100%',
     },
   };
 };
@@ -78,6 +72,7 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
 
   public componentWillReceiveProps(nextProps) {
     this.schema = SchemaTree(nextProps.schema).getInstance();
+    console.log('Done generating schema, ', this.schema.getSchemaTree());
     this.setState({
       flat: this.schema.getFlatSchema(),
       tree: this.schema.getSchemaTree(),

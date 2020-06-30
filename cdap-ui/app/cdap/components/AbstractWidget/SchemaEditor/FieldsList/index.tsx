@@ -40,8 +40,8 @@ interface IFieldsListProps {
 }
 
 export class FieldsList extends React.Component<IFieldsListProps, IFieldsListState> {
-  public static visibleNodeCount = 20;
-  public static childrenUnderFold = 10;
+  public static visibleNodeCount = 21;
+  public static childrenUnderFold = 50;
   public static heightOfRow = 32;
 
   public state: IFieldsListState = {

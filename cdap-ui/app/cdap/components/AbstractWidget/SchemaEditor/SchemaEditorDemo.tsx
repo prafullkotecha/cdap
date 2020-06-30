@@ -15,97 +15,83 @@
  */
 
 import * as React from 'react';
-import Radio from '@material-ui/core/Radio';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
 import FormControl from '@material-ui/core/FormControl';
-import simpleSchema from 'components/AbstractWidget/SchemaEditor/data/simpleSchema';
-import {
-  complex1,
-  complex2,
-  complex3,
-  complex4,
-} from 'components/AbstractWidget/SchemaEditor/data/complexSchema';
 import SchemaEditor from 'components/AbstractWidget/SchemaEditor';
-import withStyles from '@material-ui/core/styles/withStyles';
-import LoadingSVG from 'components/LoadingSVG';
+import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles';
+import LoadingSVGCentered from 'components/LoadingSVGCentered';
 import If from 'components/If';
+import FileDnD from 'components/FileDnD';
 
-const schemas = {
-  simple1: simpleSchema,
-  complex1,
-  complex2,
-  complex3,
-  complex4,
-};
+const defaultSchema = require('./data/schema2.json');
+
 const styles = () => {
   return {
     container: {
       height: 'auto',
       display: 'grid',
-      gridTemplateColumns: '99%',
-      gridTemplateRows: '40px auto',
+      gridTemplateColumns: '50% 50%',
       padding: '10px',
     },
     contentContainer: {
-      height: '600px',
+      height: '100%',
       display: 'grid',
-      gridTemplateColumns: '80%',
     },
   };
 };
 
-function SchemaEditorDemoBase({ classes }) {
-  const [value, setValue] = React.useState('complex1');
-  const [schema, setSchema] = React.useState(schemas.complex1);
-  const [loading, setLoading] = React.useState(false);
-  const handleChange = (event) => {
-    const { value: radioValue } = event.target;
-    setValue(radioValue);
-    setSchema(schemas[radioValue]);
-    setLoading(true);
+interface ISchemaEditorDemoBaseProps extends WithStyles<typeof styles> {}
+
+class SchemaEditorDemoBase extends React.Component<ISchemaEditorDemoBaseProps> {
+  public state = {
+    loading: false,
+    file: {},
+    error: null,
+    schema: defaultSchema,
   };
-
-  React.useEffect(() => {
-    if (loading) {
-      setTimeout(() => setLoading(false), 500);
-    }
-  }, [loading]);
-
-  return (
-    <div className={classes.container}>
-      <FormControl component="fieldset" disabled={loading}>
-        <RadioGroup aria-label="position" name="position" value={value} onChange={handleChange} row>
-          {Object.keys(schemas).map((s, i) => {
-            return (
-              <FormControlLabel
-                key={i}
-                value={s}
-                control={<Radio color="primary" />}
-                label={s}
-                labelPlacement="start"
-              />
-            );
-          })}
-        </RadioGroup>
-      </FormControl>
-      <div className={classes.contentContainer}>
-        <If condition={loading}>
-          <LoadingSVG />
-        </If>
-        <If condition={!loading}>
-          <SchemaEditor
-            schema={schema}
-            onChange={({ tree: t, flat: f, avroSchema }) => {
-              // tslint:disable-next-line: no-console
-              console.log(t, f, avroSchema);
-            }}
+  public onDropHandler = (e) => {
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        this.setState({
+          schema: JSON.parse(evt.target.result as any),
+          file: e[0],
+          error: null,
+        });
+      } catch (e) {
+        this.setState({ error: e.message });
+      }
+    };
+    reader.readAsText(e[0], 'UTF-8');
+  };
+  public render() {
+    console.log('rendering demo');
+    const { classes } = this.props;
+    return (
+      <div className={classes.container}>
+        <FormControl component="fieldset" disabled={this.state.loading}>
+          <FileDnD
+            onDropHandler={this.onDropHandler}
+            file={this.state.file}
+            error={this.state.error}
           />
-        </If>
+        </FormControl>
+        <div className={classes.contentContainer}>
+          <If condition={this.state.loading}>
+            <LoadingSVGCentered />
+          </If>
+          <If condition={!this.state.loading}>
+            <SchemaEditor
+              schema={this.state.schema}
+              onChange={({ tree: t, flat: f, avroSchema }) => {
+                // tslint:disable-next-line: no-console
+                console.log(t, f, avroSchema);
+              }}
+            />
+          </If>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
-
 const SchemaEditorDemo = withStyles(styles)(SchemaEditorDemoBase);
 export default React.memo(SchemaEditorDemo);
