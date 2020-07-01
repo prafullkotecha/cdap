@@ -14,6 +14,11 @@
  * the License.
  */
 
+/**
+ * Contains types used in parsing an avro schema.
+ * TODO: This is a work in progress. We don't use these types yet fully
+ * in the schema parser yet.
+ */
 type IComplexTypeNames = 'array' | 'enum' | 'map' | 'record' | 'union';
 type ISimpleType =
   | 'boolean'

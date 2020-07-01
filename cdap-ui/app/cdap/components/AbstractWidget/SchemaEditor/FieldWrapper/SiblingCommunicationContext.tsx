@@ -18,6 +18,16 @@ import * as React from 'react';
 const SiblingCommunicationContext = React.createContext(null);
 const SiblingCommunicationConsumer = SiblingCommunicationContext.Consumer;
 
+/**
+ * Each row has a sibling line for hierarchical relationship with parent.
+ * There could be multiple lines depending on the number of ancestors a particular
+ * row is nested under.
+ *
+ * The context provides a way to broadcast state changes on the siblingline. Stage changes
+ * happen if user hovers over the line to see the hierarchy with immediate parent.
+ *
+ * In this case the provider broadcasts the current hovered parent-sibling line and that gets highlighted.
+ */
 class SiblingCommunicationProvider extends React.Component {
   public setActiveParent = (id) => {
     this.setState({

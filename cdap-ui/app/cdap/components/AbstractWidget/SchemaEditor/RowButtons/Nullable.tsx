@@ -20,18 +20,6 @@ import Box from '@material-ui/core/Box';
 import CheckBox from '@material-ui/core/Checkbox';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
-import IconButton from '@material-ui/core/IconButton';
-const CheckboxWrapper = withStyles(
-  (): StyleRules => {
-    return {
-      root: {
-        textAlign: 'center',
-        display: 'inline-block',
-        padding: '5px',
-      },
-    };
-  }
-)(Box);
 const CustomCheckbox = withStyles(
   (): StyleRules => {
     return {

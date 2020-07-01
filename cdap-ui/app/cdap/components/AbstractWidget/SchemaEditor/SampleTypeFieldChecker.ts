@@ -14,21 +14,21 @@
  * the License.
  */
 
+/**
+ * This is purely a playground to play around and get an understanding on the
+ * schema types. Not used anywhere.
+ */
 import {
-  IMapFieldNullable,
   IArrayField,
   IArrayFieldNullable,
   IUnionField,
   IEnumField,
-  IEnumFieldNullable,
   IRecordField,
-  IRecordFieldNullable,
   IMapFieldBase,
   IMapField,
   IComplexType,
   ISimpleType,
   IComplexTypeFieldNullable,
-  IComplexTypeNames,
 } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 
 const mapfield: IMapField = {

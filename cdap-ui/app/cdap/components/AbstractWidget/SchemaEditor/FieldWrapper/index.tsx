@@ -19,14 +19,16 @@ import Box from '@material-ui/core/Box';
 import Paper from '@material-ui/core/Paper';
 import isObject from 'lodash/isObject';
 import withStyles from '@material-ui/core/styles/withStyles';
-import { INDENTATION_SPACING } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
-import makeStyles from '@material-ui/core/styles/makeStyles';
 import If from 'components/If';
 import { SiblingCommunicationConsumer } from 'components/AbstractWidget/SchemaEditor/FieldWrapper/SiblingCommunicationContext';
-import { blue, red } from 'components/ThemeWrapper/colors';
-import classnames from 'classnames';
 import { SchemaValidatorConsumer } from '../SchemaValidator';
 import isNil from 'lodash/isNil';
+import { SiblingLine } from 'components/AbstractWidget/SchemaEditor/FieldWrapper/SiblingLine';
+import {
+  INDENTATION_SPACING,
+  rowHeight,
+  rowMarginTop,
+} from 'components/AbstractWidget/SchemaEditor/FieldWrapper/FieldWrapperConstants';
 
 interface IFieldWrapperProps {
   ancestors: string[];
@@ -35,11 +37,6 @@ interface IFieldWrapperProps {
   className?: any;
   collapsable?: boolean;
 }
-
-const rowHeight = 28;
-const rowMarginTop = 2;
-const widthOfSiblingLines = 10;
-const borderSizeOfSiblingLines = 2;
 
 const CustomizedPaper = withStyles(() => {
   return {
@@ -63,69 +60,6 @@ const SiblingsWrapper = withStyles(() => {
   };
 })(Box);
 
-const useStyles = makeStyles({
-  root: {
-    position: 'absolute',
-    height: `${rowHeight + rowMarginTop * 2 + 2}px`,
-    width: `${widthOfSiblingLines}px`,
-    borderLeft: `${borderSizeOfSiblingLines}px solid rgba(0, 0, 0, 0.2)`,
-    left: (props) => (props as any).index * -1 * INDENTATION_SPACING,
-  },
-  innerMostSiblingConnector: {
-    '&:after': {
-      position: 'absolute',
-      height: '2px',
-      width: `${INDENTATION_SPACING - borderSizeOfSiblingLines}px`,
-      left: '0px',
-      content: '""',
-      borderTop: '2px solid rgba(0, 0, 0, 0.2)',
-      top: `${rowHeight / 2}px`,
-    },
-  },
-  highlight: {
-    borderLeftColor: `${blue[300]}`,
-    '&:after': {
-      borderTopColor: `${blue[300]}`,
-    },
-  },
-  errorHighlight: {
-    borderLeftColor: `${red[100]}`,
-    '&:after': {
-      borderTopColor: `${red[100]}`,
-    },
-  },
-});
-
-const SiblingLine = ({ id, index, activeParent, setActiveParent, ancestors, error = false }) => {
-  const classes = useStyles({ index: ancestors.length - 1 - index });
-  if (index + 1 === ancestors.length - 1) {
-    return (
-      <div
-        onMouseEnter={() => setActiveParent(id)}
-        onMouseLeave={() => setActiveParent(null)}
-        className={classnames(`${classes.root} ${classes.innerMostSiblingConnector}`, {
-          [classes.highlight]: id === activeParent,
-          [classes.errorHighlight]: error,
-        })}
-        key={id}
-        data-ancestor-id={id}
-      />
-    );
-  }
-  return (
-    <div
-      onMouseEnter={() => setActiveParent(id)}
-      onMouseLeave={() => setActiveParent(null)}
-      className={classnames(classes.root, {
-        [classes.highlight]: id === activeParent,
-        [classes.errorHighlight]: error,
-      })}
-      data-ancestor-id={id}
-      key={index}
-    />
-  );
-};
-
 const FieldWrapperBase = ({
   ancestors = [],
   children,
@@ -133,6 +67,18 @@ const FieldWrapperBase = ({
   className,
   collapsable,
 }: IFieldWrapperProps) => {
+  /**
+   * Based on the number of ancestors we indent the row accordingly. Each ancestor will
+   * have a line indicating hierarchy and a horizontal line with immediate parent
+   *
+   * The design is to have a grid base row
+   * - There is a single column wrapper (for unions and arrays) which is implemented by SingleColumnWrapper
+   * - There is a two column layout for field name/type (or label and type for maps) and the
+   * other for the row buttons. This helps us maintain the vertical alignment for row buttons
+   * no matter what the indentation is.
+   *
+   * The width of the wrapper is reduced based on the indentation.
+   */
   const spacing = ancestors.length * INDENTATION_SPACING;
   const firstColumn = `calc(100% - 75px)`;
   const secondColumn = `75px`;
@@ -143,7 +89,7 @@ const FieldWrapperBase = ({
     alignItems: 'center',
   };
   if (collapsable) {
-    const firstcol = '20px';
+    const firstcol = '20px'; // for arrow placement for nested tree.
     const secondcol = `calc(100% - (75px + 20px))`;
     const thirdcol = '75px';
     customStyles.paddingLeft = '0px';
@@ -202,4 +148,4 @@ const FieldInputWrapperBase = withStyles(() => {
 
 const FieldWrapper = React.memo(FieldWrapperBase);
 const FieldInputWrapper = React.memo(FieldInputWrapperBase);
-export { FieldWrapper, FieldInputWrapper };
+export { FieldWrapper, FieldInputWrapper, rowHeight, rowMarginTop };

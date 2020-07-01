@@ -23,6 +23,22 @@ import {
 import { ISchemaType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 import { IFlattenRowType } from '../EditorTypes';
 
+/**
+ * Schema validator is independent of the schema editor. It takes in a schema tree
+ * and converts to an avro schema and parses the schema through the avsc library
+ *
+ * The context provides a way to broadcast the error to appropriate row
+ *
+ * We cannot pin point the error to a specific row as avsc library doesn't
+ * provide details on the place of failure. We right now surface the error
+ * to the parent to show the error under a tree.
+ *
+ * This is separate in an effort to push this processing to a web worker in the furture.
+ * If we are not able write our own avro schema parser we won't be able to pinpoint
+ * the error to a specific row. In which we have to recurrsively parse each node
+ * in the schema tree to identify specific row of issue. This kind of processing
+ * will bring the UI down which is when we will move this to the web worker.
+ */
 interface ISchemaValidatorProviderBaseState {
   id: string;
   time: number;
@@ -43,8 +59,22 @@ class SchemaValidatorProvider extends React.Component {
     errorMap: {},
   };
 
+  /**
+   * The subtree validation takes in a flat field, its ancestors
+   * and navigates to the appropriate child in the schema tree and parses
+   * the subtree. If it is valid nothing happens. If it is invalid we add the
+   * error to the validator context with the id of the immediate parent of the field
+   *
+   * The error validation consumer is used per row and whichever row is added
+   * to the error map gets highlighted with error.
+   *
+   * The sibliling line connection gets highlighted when parent is higlighted with an
+   * error.
+   * @param field Current flat row updated by user
+   * @param schemaTree schema tree to validate against.
+   */
   private isSubTreeValidAvroSchema = (field: IFlattenRowType, schemaTree) => {
-    const { id, ancestors } = field;
+    const { ancestors } = field;
     if (!ancestors || (Array.isArray(ancestors) && !ancestors.length)) {
       return;
     }
@@ -74,7 +104,7 @@ class SchemaValidatorProvider extends React.Component {
     return goToLowestParent(ancestors.slice(1), schemaTree);
   };
 
-  private validateSpecificField = (field, schemaTree) => {
+  private validate = (field, schemaTree) => {
     const errorObj = this.isSubTreeValidAvroSchema(field, schemaTree);
     if (!errorObj) {
       const { errorMap } = this.state;
@@ -96,10 +126,6 @@ class SchemaValidatorProvider extends React.Component {
         [fieldIdToShowError]: error,
       },
     });
-  };
-
-  private validate = (currentFieldId, schemaTree) => {
-    this.validateSpecificField(currentFieldId, schemaTree);
   };
 
   public state = {

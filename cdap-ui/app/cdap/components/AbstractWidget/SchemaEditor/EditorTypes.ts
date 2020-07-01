@@ -14,6 +14,9 @@
  * the License.
  */
 
+/**
+ * Contains types used only by the editor for presentation.
+ */
 import { ISimpleType, IComplexTypeNames } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 
 type IInternalFieldType =
@@ -31,6 +34,16 @@ type IInternalFieldType =
   | 'union-simple-type'
   | 'union-complex-type-root';
 
+/**
+ * Type of flattened row for rendering.
+ * Contains context for that specific row. We have 'ancestors' here to show the
+ * indentation for complex types.
+ *
+ * Every row will have a hidden flag. Potentially every row can be hidden
+ * when the user collapses.
+ *
+ * Rows that has children will have a boolean collapsed.
+ */
 interface IFlattenRowType {
   id: string;
   name?: string;

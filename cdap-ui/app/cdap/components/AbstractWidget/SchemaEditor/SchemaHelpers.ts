@@ -45,6 +45,10 @@ const displayTypes: Array<ISimpleType | IComplexTypeNames | ILogicalTypeNames> =
   'decimal',
 ];
 
+/**
+ * Checks if the current avro type is nullable.
+ * @param type any avro type (simple/complex types).
+ */
 const isNullable = (type) => {
   if (Array.isArray(type)) {
     return type.find((t) => t === 'null') === 'null';
@@ -55,7 +59,10 @@ const isNullable = (type) => {
 const isUnion = (type) => {
   return Array.isArray(type) && !isNullable(type);
 };
-
+/**
+ * If the type is nullable get the non-null type for further processing.
+ * @param type any valid avro type
+ */
 const getNonNullableType = (type) => {
   if (Array.isArray(type) && !isUnion(type)) {
     const nonNullTypes = type.filter((t) => t !== 'null');
@@ -65,7 +72,10 @@ const getNonNullableType = (type) => {
   }
   return type;
 };
-
+/**
+ * Helps in getting the simple type or underlying type in a logical type.
+ * @param type valid simple/logical avro type
+ */
 const getSimpleType = (type) => {
   if (typeof type === 'string') {
     return type;
@@ -75,7 +85,11 @@ const getSimpleType = (type) => {
   }
   return type;
 };
-
+/**
+ * Utility to check if the current type is a complex type to tranverse further
+ * into the schema tree.
+ * @param complexType any valid complex avro type. (map, array, record, union and enum)
+ */
 const isComplexType = (complexType) => {
   const nullable = isNullable(complexType);
   let type = complexType;
@@ -95,7 +109,10 @@ const isComplexType = (complexType) => {
       return isUnion(complexType) ? true : false;
   }
 };
-
+/**
+ * Utility function to get the complex type names.
+ * @param complexType any valid complex avro type.
+ */
 const getComplexTypeName = (complexType): IComplexTypeNames => {
   const c = cloneDeep(complexType);
   let type;

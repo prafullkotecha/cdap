@@ -25,13 +25,21 @@ import { SiblingCommunicationProvider } from 'components/AbstractWidget/SchemaEd
 import { IOnChangeReturnType } from 'components/AbstractWidget/SchemaEditor/Context/SchemaManager';
 import VirtualScroll from 'components/VirtualScroll';
 import { SchemaValidatorConsumer } from 'components/AbstractWidget/SchemaEditor/SchemaValidator';
+import withstyles, { WithStyles, StyleRules } from '@material-ui/core/styles/withStyles';
+const styles = (): StyleRules => {
+  return {
+    errorHighlight: {
+      color: 'red',
+    },
+  };
+};
 
 interface IFieldsListState {
   rows: IFlattenRowType[];
   currentRowToFocus: string;
 }
 
-interface IFieldsListProps {
+interface IFieldsListProps extends WithStyles<typeof styles> {
   value: IFlattenRowType[];
   onChange: (
     index: number,
@@ -40,7 +48,7 @@ interface IFieldsListProps {
   ) => IOnChangeReturnType;
 }
 
-export class FieldsList extends React.Component<IFieldsListProps, IFieldsListState> {
+class FieldsListBase extends React.Component<IFieldsListProps, IFieldsListState> {
   public static visibleNodeCount = 20;
   public static childrenUnderFold = 5;
   public static heightOfRow = 34;
@@ -70,6 +78,7 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
 
   public renderList = (visibleNodeCount, startNode) => {
     const { currentRowToFocus } = this.state;
+    // Remove the first row as that is the top level schema row.
     return this.state.rows
       .slice(1)
       .filter((row) => !row.hidden)
@@ -91,23 +100,28 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
 
   public render() {
     const itemCount = this.state.rows.filter((field) => !field.hidden).length;
+    const { classes } = this.props;
     return (
       <SiblingCommunicationProvider>
         <SchemaValidatorConsumer>
           {({ errorMap = {} }) => {
             if (errorMap.hasOwnProperty(this.state.rows[0].id)) {
-              return <div style={{ color: 'red' }}>{errorMap[this.state.rows[0].id]}</div>;
+              return (
+                <div className={classes.errorHighlight}>{errorMap[this.state.rows[0].id]}</div>
+              );
             }
           }}
         </SchemaValidatorConsumer>
         <VirtualScroll
           itemCount={() => itemCount}
-          visibleChildCount={FieldsList.visibleNodeCount}
-          childHeight={FieldsList.heightOfRow}
+          visibleChildCount={FieldsListBase.visibleNodeCount}
+          childHeight={FieldsListBase.heightOfRow}
           renderList={this.renderList.bind(this)}
-          childrenUnderFold={FieldsList.childrenUnderFold}
+          childrenUnderFold={FieldsListBase.childrenUnderFold}
         />
       </SiblingCommunicationProvider>
     );
   }
 }
+const FieldsList = withstyles(styles)(FieldsListBase);
+export { FieldsList };

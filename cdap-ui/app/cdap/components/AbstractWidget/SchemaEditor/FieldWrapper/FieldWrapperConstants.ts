@@ -14,18 +14,8 @@
  * the License.
  */
 
-import withStyles from '@material-ui/core/styles/withStyles';
-import Box from '@material-ui/core/Box';
-/**
- * Row wrapper used for unions and array type rows.
- */
-const SingleColumnWrapper = withStyles(() => {
-  return {
-    root: {
-      width: '132px', // 50 + 100 + 10 from the mapwrapper
-      marginLeft: '-12px',
-    },
-  };
-})(Box);
+import { INDENTATION_SPACING } from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
+const rowHeight = 28;
+const rowMarginTop = 2;
 
-export { SingleColumnWrapper };
+export { INDENTATION_SPACING, rowHeight, rowMarginTop };

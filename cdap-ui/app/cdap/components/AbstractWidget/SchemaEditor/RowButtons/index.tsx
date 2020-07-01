@@ -17,11 +17,16 @@
 import * as React from 'react';
 import withStyles from '@material-ui/core/styles/withStyles';
 import Box from '@material-ui/core/Box';
-import { Nullable } from 'components/AbstractWidget/SchemaEditor/Nullable';
+import { Nullable } from 'components/AbstractWidget/SchemaEditor/RowButtons/Nullable';
 import AddRowButton from 'components/AbstractWidget/SchemaEditor/RowButtons/AddRowButton';
 import RemoveRowButton from 'components/AbstractWidget/SchemaEditor/RowButtons/RemoveRowButton';
 import If from 'components/If';
 
+/**
+ * Generic row buttons (add, nullable & remove buttons)
+ * Based on the availability of handlers for each action each
+ * button is showed.
+ */
 const RowButtonWrapper = withStyles(() => {
   return {
     root: {

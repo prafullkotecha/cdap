@@ -54,6 +54,17 @@ interface INode {
 
 type IOrderedChildren = Record<string, INode> | Record<'order', string[]>;
 
+/**
+ * {
+ *  [child-id1]: {
+ *    id: child-id1,
+ *    internalType: 'union-simple-type',
+ *    type: 'string'
+ *  }
+ * }
+ * @param type avro union type
+ * ['string']
+ */
 function parseUnionType(type): IOrderedChildren {
   const result: IOrderedChildren = {
     order: [],
@@ -80,7 +91,20 @@ function parseUnionType(type): IOrderedChildren {
   }
   return result;
 }
-
+/**
+ * @returns
+ * {
+ *  [child-id1]: {
+ *    internalType: 'array-simple-type',
+ *    type: 'string'
+ *  }
+ * }
+ * @param type avro array type
+ * {
+ *  type: 'array',
+ *  items: 'string'
+ * }
+ */
 function parseArrayType(type): IOrderedChildren {
   const nullable = isNullable(type);
   const t = getNonNullableType(type);
@@ -106,6 +130,31 @@ function parseArrayType(type): IOrderedChildren {
   };
 }
 
+/**
+ * @returns
+ * {
+ *  order: [child-id1, child-id2,...]
+ *  [child-id1]: {
+ *    id: child-id1,
+ *    internalType: 'enum-symbol',
+ *    typeProperties: {
+ *      symbol: 'symbol1'
+ *    }
+ *  },
+ *  [child-id2]: {
+ *    id: child-id2,
+ *    internalType: 'enum-symbol',
+ *    typeProperties: {
+ *      symbol: 'symbol2'
+ *    }
+ *  }
+ * }
+ * @param type avro enum type
+ * {
+ *  type: 'enum',
+ *  symbols: ['symbol1', 'symbol2', ....]
+ * }
+ */
 function parseEnumType(type): IOrderedChildren {
   const nullable = isNullable(type);
   const t = getNonNullableType(type);
@@ -148,7 +197,29 @@ function getMapSubType(type, internalTypeName): INode {
     };
   }
 }
-
+/**
+ * @returns
+ * {
+ *   [child-id1]: {
+ *    "id": child-id1,
+ *    "internalType": "map-keys-simple-type",
+ *    "type": "string"
+ *  },
+ *   [child-id2] {
+ *    "id": child-id2,
+ *    "internalType": "map-values-simple-type",
+ *    "nullable": false,
+ *    "type": "string"
+ *   }
+ * }
+ * @param type avro map type
+ * {
+ *  type: {
+ *    keys: 'string',
+ *    values: 'string',
+ *  }
+ * }
+ */
 function parseMapType(type): IOrderedChildren {
   const t = getNonNullableType(type);
   const keysType = t.keys;
@@ -166,7 +237,23 @@ function parseMapType(type): IOrderedChildren {
   result[mapValuesSubType.id] = mapValuesSubType;
   return result;
 }
-
+/**
+ * @returns -
+ * {
+ *  [child-id1]:{
+ *    id: child-id1,
+ *    internalType: 'record-field-simple-type',
+ *    type: 'string',
+ *  },
+ *  order: [child-id1]
+ * }
+ * @param type - avro record type
+ * {
+ *  name: 'record-name',
+ *  type: 'record',
+ *  fields: [ field1, field2 ...]
+ * }
+ */
 function parseRecordType(type): IOrderedChildren {
   const t = getNonNullableType(type);
   const result = {
@@ -206,6 +293,11 @@ function parseComplexType(type): IOrderedChildren {
   return record;
 }
 
+/**
+ * The logical type is similar to a complex type. The only difference is it doesn't have
+ *  children and will have type properties that map the logical property to underlying type.
+ * @param field - field in the schema.
+ */
 function checkForLogicalType(field: IFieldType | IFieldTypeNullable) {
   let type = field.type;
   type = getNonNullableType(type) as ILogicalTypeBase;
@@ -245,6 +337,10 @@ function checkForLogicalType(field: IFieldType | IFieldTypeNullable) {
   }
 }
 
+/**
+ * Function to parse fields in a record type. Can be a simple field or a complex record type.
+ * @param field - A field in the record type.
+ */
 function parseSubTree(field: IFieldType | IFieldTypeNullable): INode {
   const { type, name } = field;
   const nullable = isNullable(type);
@@ -270,11 +366,31 @@ function parseSubTree(field: IFieldType | IFieldTypeNullable): INode {
   };
 }
 
+/**
+ * Parser to convert the avro schema JSON to internal representation of a tree.
+ *
+ * Each node has a type for display and an internal type to determine how rendering
+ * happens. Based on the internal type presentation layer decides to nest/render rows.
+ * @param avroSchema avro schema JSON
+ * @param name default name of the schema.
+ * @return The return is a tree. Will always be a schema type with record type. Can have deep nesting
+ * depending upon the schema complexity.
+ * {
+ *  id: xxx,
+ *  internalType: 'schema',
+ *  type: 'record',
+ *  children: {
+ *    order: [array-of-child-ids],
+ *    [child-id1]: child-id1 node,
+ *    [child-id2]: child-id2 node,
+ *  }
+ * }
+ */
 function parseSchema(avroSchema: ISchemaType, name = 'etlSchemaBody'): INode {
   const fields = avroSchema.schema.fields;
   const root: INode = {
     name,
-    internalType: 'schema',
+    internalType: 'schema', // The 'schema' is only used for top level schema.
     type: 'record',
     id: uuidV4(),
     children: {

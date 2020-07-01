@@ -13,7 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
+/**
+ * Defines all the defaults we use for the schema.
+ */
 const logicalTypes = ['time', 'timestamp', 'decimal', 'date'];
 const defaultPrecision = 32;
 const defaultScale = 3;
