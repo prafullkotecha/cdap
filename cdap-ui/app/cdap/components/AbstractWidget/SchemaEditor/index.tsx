@@ -35,7 +35,7 @@ import {
   SchemaValidatorProvider,
 } from 'components/AbstractWidget/SchemaEditor/SchemaValidator';
 
-const styles = (theme): StyleRules => {
+const styles = (): StyleRules => {
   return {
     schemaContainer: {
       width: '100%',
