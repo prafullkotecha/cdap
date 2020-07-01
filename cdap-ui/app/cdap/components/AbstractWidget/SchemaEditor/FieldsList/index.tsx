@@ -69,7 +69,6 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
   };
 
   public renderList = (visibleNodeCount, startNode) => {
-    console.log('calling : ');
     const { currentRowToFocus } = this.state;
     return this.state.rows
       .slice(1)

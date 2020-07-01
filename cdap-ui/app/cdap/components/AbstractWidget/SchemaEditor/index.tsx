@@ -72,7 +72,6 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
 
   public componentWillReceiveProps(nextProps) {
     this.schema = SchemaTree(nextProps.schema).getInstance();
-    console.log('Done generating schema, ', this.schema.getSchemaTree());
     this.setState({
       flat: this.schema.getFlatSchema(),
       tree: this.schema.getSchemaTree(),

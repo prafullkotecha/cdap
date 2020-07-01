@@ -61,12 +61,22 @@ function FlatSchemaBase(
   return result;
 }
 function FlatSchema(schemaTree: INode, options: ISchemaTreeOptions, ancestors = []) {
-  // if (isNilOrEmpty(options) || (isObject(options) && isNilOrEmpty(options.collapseAll))) {
-  //   const size = JSON.stringify(schemaTree).length;
-  //   if (size > 100000) {
-  //     options.collapseAll = true;
-  //   }
-  // }
-  return FlatSchemaBase(schemaTree, options, ancestors);
+  const size = JSON.stringify(schemaTree).length;
+  const customOptions = {
+    ...options,
+  };
+  if (size > 100000) {
+    // If the JSON is too long and if the is not default collapseAll
+    // option then collapse it.
+    if (
+      !isNilOrEmpty(options) ||
+      !(isObject(options) && typeof options.collapseAll === 'boolean')
+    ) {
+      customOptions.collapseAll = true;
+    }
+  } else {
+    customOptions.collapseAll = false;
+  }
+  return FlatSchemaBase(schemaTree, customOptions, ancestors);
 }
 export { FlatSchema };

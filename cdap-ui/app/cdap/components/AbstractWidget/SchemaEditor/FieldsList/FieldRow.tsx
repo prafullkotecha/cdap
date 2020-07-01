@@ -209,7 +209,6 @@ class FieldRowBase extends React.Component<IFieldRowProps, IFieldRowState> {
   };
 
   public render() {
-    console.log('Re-rendering every row');
     const { classes } = this.props;
     const { ancestors, internalType } = this.props.field;
     if (internalType === 'schema') {

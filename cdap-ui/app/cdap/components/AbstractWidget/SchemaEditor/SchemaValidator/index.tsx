@@ -99,7 +99,6 @@ class SchemaValidatorProvider extends React.Component {
   };
 
   private validate = (currentFieldId, schemaTree) => {
-    console.log('validating...');
     this.validateSpecificField(currentFieldId, schemaTree);
   };
 

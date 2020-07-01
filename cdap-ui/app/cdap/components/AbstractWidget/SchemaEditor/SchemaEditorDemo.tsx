@@ -117,7 +117,6 @@ class SchemaEditorDemoBase extends React.Component<ISchemaEditorDemoBaseProps> {
   };
 
   public render() {
-    console.log('rendering demo');
     const { classes } = this.props;
     return (
       <div className={classes.container}>
