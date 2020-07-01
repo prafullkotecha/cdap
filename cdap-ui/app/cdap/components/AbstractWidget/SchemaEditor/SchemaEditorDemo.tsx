@@ -156,8 +156,6 @@ class SchemaEditorDemoBase extends React.Component<ISchemaEditorDemoBaseProps> {
             <SchemaEditor
               schema={this.state.schema}
               onChange={({ tree: t, flat: f, avroSchema }) => {
-                // tslint:disable-next-line: no-console
-                console.log(t, f, avroSchema);
                 this.modifiedSchema = avroSchema;
               }}
             />
