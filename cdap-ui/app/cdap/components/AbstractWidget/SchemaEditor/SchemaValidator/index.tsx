@@ -53,7 +53,7 @@ class SchemaValidatorProvider extends React.Component {
         const entireSchema = SchemaGenerator(schemaTree);
         cdapavsc.parse(entireSchema.schema, { wrapUnions: true });
       } catch (e) {
-        return { error: e.message, fieldIdToShowError: id };
+        return { error: e.message, fieldIdToShowError: ancestors[0] };
       }
       return;
     }

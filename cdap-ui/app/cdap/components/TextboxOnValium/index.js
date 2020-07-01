@@ -96,6 +96,7 @@ export default class TextboxOnValium extends Component {
     return (
       <input
         className={this.props.className}
+        placeholder={this.props.placeholder}
         ref={
           this.props.inputRef
             ? this.props.inputRef

@@ -15,9 +15,16 @@
  */
 
 import * as React from 'react';
-import TextBox from 'components/AbstractWidget/FormInputs/TextBox';
 import { IFieldTypeBaseProps } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { RowButtons } from 'components/AbstractWidget/SchemaEditor/RowButtons';
+import TextboxOnValium from 'components/TextboxOnValium';
+import makeStyles from '@material-ui/core/styles/makeStyles';
+
+const useStyles = makeStyles({
+  textbox: {
+    border: 0,
+  },
+});
 
 const EnumTypeBase = ({
   typeProperties,
@@ -29,6 +36,18 @@ const EnumTypeBase = ({
   const { symbol } = typeProperties;
   const [enumSymbol, setEnumSymbol] = React.useState(symbol);
   const inputEle = React.useRef(null);
+  const classes = useStyles();
+  const onChangeHandler = (newValue, _, keyPressKeyCode) => {
+    if (keyPressKeyCode === 13) {
+      onAdd();
+      return;
+    }
+    setEnumSymbol(newValue);
+    onChange('typeProperties', {
+      symbol: newValue,
+    });
+  };
+
   React.useEffect(() => {
     if (autoFocus) {
       if (inputEle.current) {
@@ -38,21 +57,13 @@ const EnumTypeBase = ({
   }, [autoFocus]);
   return (
     <React.Fragment>
-      <TextBox
+      <TextboxOnValium
         value={enumSymbol}
-        onKeyPress={(event: React.KeyboardEvent) => {
-          if (event.nativeEvent.keyCode === 13) {
-            onAdd();
-          }
-        }}
-        onChange={(value) => {
-          setEnumSymbol(value);
-          onChange('typeProperties', {
-            symbol: value,
-          });
-        }}
-        widgetProps={{ placeholder: 'symbol' }}
+        onChange={onChangeHandler}
+        placeholder="symbol"
         inputRef={(ref) => (inputEle.current = ref)}
+        onKeyUp={() => ({})}
+        className={classes.textbox}
       />
       <RowButtons onRemove={onRemove} onAdd={onAdd} />
     </React.Fragment>

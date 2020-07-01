@@ -24,6 +24,7 @@ import { FieldRow } from 'components/AbstractWidget/SchemaEditor/FieldsList/Fiel
 import { SiblingCommunicationProvider } from 'components/AbstractWidget/SchemaEditor/FieldWrapper/SiblingCommunicationContext';
 import { IOnChangeReturnType } from 'components/AbstractWidget/SchemaEditor/Context/SchemaTree';
 import VirtualScroll from 'components/VirtualScroll';
+import { SchemaValidatorConsumer } from 'components/AbstractWidget/SchemaEditor/SchemaValidator';
 
 interface IFieldsListState {
   rows: IFlattenRowType[];
@@ -93,6 +94,13 @@ export class FieldsList extends React.Component<IFieldsListProps, IFieldsListSta
     const itemCount = this.state.rows.filter((field) => !field.hidden).length;
     return (
       <SiblingCommunicationProvider>
+        <SchemaValidatorConsumer>
+          {({ errorMap = {} }) => {
+            if (errorMap.hasOwnProperty(this.state.rows[0].id)) {
+              return <div style={{ color: 'red' }}>{errorMap[this.state.rows[0].id]}</div>;
+            }
+          }}
+        </SchemaValidatorConsumer>
         <VirtualScroll
           itemCount={() => itemCount}
           visibleChildCount={FieldsList.visibleNodeCount}

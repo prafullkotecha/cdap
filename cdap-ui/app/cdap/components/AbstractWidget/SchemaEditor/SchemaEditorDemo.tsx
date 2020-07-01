@@ -17,14 +17,28 @@
 import * as React from 'react';
 import FormControl from '@material-ui/core/FormControl';
 import SchemaEditor from 'components/AbstractWidget/SchemaEditor';
-import withStyles, { WithStyles } from '@material-ui/core/styles/withStyles';
+import withStyles, { WithStyles, StyleRules } from '@material-ui/core/styles/withStyles';
 import LoadingSVGCentered from 'components/LoadingSVGCentered';
 import If from 'components/If';
 import FileDnD from 'components/FileDnD';
+import { Button } from '@material-ui/core';
 
 const defaultSchema = require('./data/schema2.json');
+const emptyScchema = {
+  name: 'etlSchemaBody',
+  schema: {
+    type: 'record',
+    name: 'etlSchemaBody',
+    fields: [
+      {
+        name: '',
+        type: 'string',
+      },
+    ],
+  },
+};
 
-const styles = () => {
+const styles = (): StyleRules => {
   return {
     container: {
       height: 'auto',
@@ -35,6 +49,13 @@ const styles = () => {
     contentContainer: {
       height: '100%',
       display: 'grid',
+    },
+    btnContainer: {
+      margin: '10px 0',
+      textAlign: 'right',
+    },
+    btns: {
+      marginLeft: '5px',
     },
   };
 };
@@ -48,6 +69,7 @@ class SchemaEditorDemoBase extends React.Component<ISchemaEditorDemoBaseProps> {
     error: null,
     schema: defaultSchema,
   };
+  public modifiedSchema = defaultSchema;
   public onDropHandler = (e) => {
     const reader = new FileReader();
     reader.onload = (evt) => {
@@ -67,17 +89,64 @@ class SchemaEditorDemoBase extends React.Component<ISchemaEditorDemoBaseProps> {
     };
     reader.readAsText(e[0], 'UTF-8');
   };
+
+  public onExport = () => {
+    const blob = new Blob([JSON.stringify(this.modifiedSchema, null, 4)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+    const exportFileName = 'schema';
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${exportFileName}.json`;
+
+    const clickHandler = (event) => {
+      event.stopPropagation();
+    };
+    a.addEventListener('click', clickHandler, false);
+    a.click();
+  };
+
+  public clearSchema = () => {
+    this.setState({
+      loading: false,
+      file: {},
+      error: null,
+      schema: emptyScchema,
+    });
+  };
+
   public render() {
     console.log('rendering demo');
     const { classes } = this.props;
     return (
       <div className={classes.container}>
         <FormControl component="fieldset" disabled={this.state.loading}>
-          <FileDnD
-            onDropHandler={this.onDropHandler}
-            file={this.state.file}
-            error={this.state.error}
-          />
+          <div>
+            <FileDnD
+              onDropHandler={this.onDropHandler}
+              file={this.state.file}
+              error={this.state.error}
+            />
+            <div className={classes.btnContainer}>
+              <Button
+                className={classes.btns}
+                onClick={this.onExport}
+                variant="contained"
+                color="primary"
+              >
+                Export
+              </Button>
+              <Button
+                className={classes.btns}
+                onClick={this.clearSchema}
+                variant="contained"
+                color="secondary"
+              >
+                Clear
+              </Button>
+            </div>
+          </div>
         </FormControl>
         <div className={classes.contentContainer}>
           <If condition={this.state.loading}>
@@ -89,6 +158,7 @@ class SchemaEditorDemoBase extends React.Component<ISchemaEditorDemoBaseProps> {
               onChange={({ tree: t, flat: f, avroSchema }) => {
                 // tslint:disable-next-line: no-console
                 console.log(t, f, avroSchema);
+                this.modifiedSchema = avroSchema;
               }}
             />
           </If>
