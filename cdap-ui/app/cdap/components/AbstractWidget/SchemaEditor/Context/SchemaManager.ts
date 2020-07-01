@@ -21,123 +21,27 @@ import {
 } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import uuidV4 from 'uuid/v4';
 import isNil from 'lodash/isNil';
-import {
-  logicalTypes,
-  defaultTimeStampTypeProperties,
-  defaultDecimalTypeProperties,
-  defaultTimeTypeProperties,
-  defaultDateTypeProperties,
-  defaultArrayType,
-  defaultEnumType,
-  defaultMapType,
-  defaultRecordType,
-  defaultUnionType,
-} from 'components/AbstractWidget/SchemaEditor/SchemaConstants';
 import isEmpty from 'lodash/isEmpty';
-import {
-  INode,
-  parseSchema,
-  parseUnionType,
-  parseArrayType,
-  parseEnumType,
-  parseMapType,
-  IOrderedChildren,
-  parseComplexType,
-} from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
+import { INode, parseSchema } from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
 import { FlatSchema } from 'components/AbstractWidget/SchemaEditor/Context/FlatSchema';
 import { ISchemaType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 import { SchemaGenerator } from 'components/AbstractWidget/SchemaEditor/Context/SchemaGenerator';
 import isObject from 'lodash/isObject';
+import {
+  branchCount,
+  initChildren,
+  getInternalType,
+  initTypeProperties,
+} from 'components/AbstractWidget/SchemaEditor/Context/SchemaManagerUtilities';
 
-function getInternalType(tree: INode) {
-  const hasChildren = tree.children ? Object.keys(tree.children).length : 0;
-  if (tree.internalType === 'record-field-simple-type' && hasChildren) {
-    return 'record-field-complex-type-root';
-  }
-  if (tree.internalType === 'record-field-complex-type-root' && !hasChildren) {
-    return 'record-field-simple-type';
-  }
-  if (tree.internalType === 'union-simple-type' && hasChildren) {
-    return 'union-complex-type-root';
-  }
-  if (tree.internalType === 'union-complex-type-root' && !hasChildren) {
-    return 'union-simple-type';
-  }
-  if (tree.internalType === 'array-simple-type' && hasChildren) {
-    return 'array-complex-type-root';
-  }
-  if (tree.internalType === 'array-complex-type-root' && !hasChildren) {
-    return 'array-simple-type';
-  }
-  if (tree.internalType === 'map-keys-simple-type' && hasChildren) {
-    return 'map-keys-complex-type-root';
-  }
-  if (tree.internalType === 'map-keys-complex-type-root' && hasChildren) {
-    return 'map-keys-simple-type';
-  }
-  if (tree.internalType === 'map-values-simple-type' && hasChildren) {
-    return 'map-values-complex-type-root';
-  }
-  if (tree.internalType === 'map-values-complex-type-root' && hasChildren) {
-    return 'map-values-simple-type';
-  }
-  return tree.internalType;
-}
-
-const branchCount = (tree: INode): number => {
-  let count = 0;
-  if (tree && !isEmpty(tree.children) && Object.keys(tree.children).length) {
-    // skip 'order' array which is under children.
-    const children = Object.values(tree.children).filter((child) => !Array.isArray(child));
-    count += children.length;
-    children.forEach((child: INode) => {
-      count += branchCount(child);
-    });
-  }
-  return count;
-};
-
-const initChildren = (type): IOrderedChildren => {
-  switch (type) {
-    case 'array':
-      return parseArrayType(defaultArrayType);
-    case 'enum':
-      return parseEnumType(defaultEnumType);
-    case 'map':
-      return parseMapType(defaultMapType);
-    case 'record': {
-      return parseComplexType(defaultRecordType);
-    }
-    case 'union':
-      return parseUnionType(defaultUnionType);
-    default:
-      return;
-  }
-};
-
-const initTypeProperties = (tree: INode) => {
-  if (logicalTypes.indexOf(tree.type) === -1) {
-    return {};
-  }
-  switch (tree.type) {
-    case 'decimal':
-      return defaultDecimalTypeProperties;
-    case 'time':
-      return defaultTimeTypeProperties;
-    case 'timestamp':
-      return defaultTimeStampTypeProperties;
-    case 'date':
-      return defaultDateTypeProperties;
-    default:
-      return {};
-  }
-};
-
-interface ISchemaTreeOptions {
+interface ISchemaManagerOptions {
   collapseAll: boolean;
 }
 
-interface ISchemaTree {
+/**
+ * Interface that defines the schema data structure.
+ */
+interface ISchemaManager {
   getSchemaTree: () => INode;
   getFlatSchema: () => IFlattenRowType[];
   getAvroSchema: () => ISchemaType;
@@ -154,11 +58,31 @@ interface IOnChangeReturnType {
   nodeDepth?: number;
 }
 
-class SchemaTreeBase implements ISchemaTree {
+/**
+ * The Schema Manager is the central place to manage the entire schema
+ *
+ * Internally it has two data-structures,
+ * 1. A tree to convert the JSON avro schema to a representation that we can
+ * process a little bit faster.
+ * 2. A flat array for presentation purpose.
+ *
+ * The tree is used for adding/removing/deleting fields in an avro schema.
+ * It is a basic tree with id, name, type and children.
+ *
+ * The children is usually a map of id to the child node. In specific cases (records and enums)
+ * we need to maintain the order. So in those cases the children map will have a static 'order'
+ * array which maintains the order of the children.
+ *
+ * The flatten array is derived from the tree. It is nothing but a DFS traversal of the tree
+ *
+ * We need two representations because we need one for processing and the other for display purposes.
+ * Flattening the tree as aray helps us with using virtual scroll which improves performance.
+ */
+class SchemaManagerBase implements ISchemaManager {
   private schemaTree: INode;
   private flatTree: IFlattenRowType[];
-  private options: ISchemaTreeOptions;
-  constructor(avroSchema, options: ISchemaTreeOptions) {
+  private options: ISchemaManagerOptions;
+  constructor(avroSchema, options: ISchemaManagerOptions) {
     this.schemaTree = parseSchema(avroSchema);
     this.flatTree = FlatSchema(this.schemaTree, options);
     this.options = options;
@@ -168,6 +92,8 @@ class SchemaTreeBase implements ISchemaTree {
   public getFlatSchema = () => this.flatTree;
   public getAvroSchema = () => SchemaGenerator(this.schemaTree);
 
+  // Generic function to insert the newly created child id into the order array
+  // to maintain order of fields.
   private insertNewIdToOrder = (order = [], referenceId) => {
     const id = uuidV4();
     // +1 to add next to the current element.
@@ -274,13 +200,17 @@ class SchemaTreeBase implements ISchemaTree {
     if (!tree) {
       return { tree: undefined, newTree: undefined, currentField: undefined };
     }
+    // Only the top level record fields will have one ancestors. So just add the specific type.
     if (fieldId.ancestors.length === 1) {
       return this.addSpecificTypesToTree(tree, fieldId);
     }
+    // Traverse to the specific child tree in the main schema tree.
     const { tree: child, newTree, currentField } = this.addToTree(
       tree.children[fieldId.ancestors[1]],
       { id: fieldId.id, ancestors: fieldId.ancestors.slice(1) }
     );
+    // Mutates the main schema tree. This a performance optimization that we need to
+    // to avoid generating huge JSONs on every mutation of the schema.
     return {
       tree: {
         ...tree,
@@ -291,6 +221,45 @@ class SchemaTreeBase implements ISchemaTree {
       },
       newTree,
       currentField,
+    };
+  };
+
+  /**
+   * Add a new field to the current index. This could mean,
+   *  - Add a new field in record schema
+   *  - Add a new Symbol to enum
+   *  - Add a new union type
+   * The results of addition are,
+   *  - Modifying the schema tree to add the new field (tree)
+   *  - Newly added tree
+   *  - Current field to focus on
+   * We don't re-flatten the entire schema tree all the time. We calculate only the newly
+   * added field, it could be a single field or a tree in case of union or map or enum,
+   * and then flatten that sub tree and insert into our flattened array.
+   *
+   * @param currentIndex - Current index in the flattend array to add a new row.
+   */
+  private add = (currentIndex): IOnChangeReturnType => {
+    const matchingEntry = this.flatTree[currentIndex];
+    let result: { tree: INode; newTree: INode; currentField: INode };
+    let newFlatSubTree: IFlattenRowType[];
+    const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
+    // The result is the newly modified tree, the newly added tree and the current field
+    // The modified tree is the entire schema tree that we maintain
+    // The new tree is for flattening and inserting it into the flattened array
+    // The current field is then passed on to the schema editor for presentation (focus on that specific row)
+    result = this.addToTree(this.schemaTree, idObj);
+    newFlatSubTree = FlatSchema(result.newTree, this.options, matchingEntry.ancestors);
+    this.schemaTree = result.tree;
+    const currentFieldBranchCount = branchCount(result.currentField);
+    this.flatTree = [
+      ...this.flatTree.slice(0, currentIndex + currentFieldBranchCount + 1),
+      ...newFlatSubTree,
+      ...this.flatTree.slice(currentIndex + currentFieldBranchCount + 1),
+    ];
+    return {
+      fieldIdToFocus: this.flatTree[currentIndex + currentFieldBranchCount + 1].id,
+      fieldIndex: currentIndex + currentFieldBranchCount + 1,
     };
   };
 
@@ -332,20 +301,35 @@ class SchemaTreeBase implements ISchemaTree {
     };
   };
 
+  /**
+   * Remove a field from the schema. This could be a simple type of row
+   * or a complex type.
+   * There is also a need for us to add a new row as part of removal.
+   *
+   * For instance: This comes up when users delete all the fields in
+   * a record type. We can't have all the fields deleted. Upon the
+   * deleting the final field we still need to add a new field for
+   * the user to be able to keep the record type.
+   * @param currentIndex - Index of the current row to be removed.
+   */
   private remove = (currentIndex: number): IOnChangeReturnType => {
     const matchingEntry = this.flatTree[currentIndex];
     const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
     const { tree, removedField, newlyAddedField } = this.removeFromTree(this.schemaTree, idObj);
     this.schemaTree = tree;
+    // branch count to determine the slice in the flattened array.
+    // If the user removed a complex type we need to remove the row
+    // and all of its children.
     const childrenInBranch = branchCount(removedField);
     let newFlatSubTree = [];
+    // Newly added row in case we need to maintain the structure of say, a record or an enum.
     if (newlyAddedField) {
       newFlatSubTree = FlatSchema(newlyAddedField, this.options, matchingEntry.ancestors);
     }
     this.flatTree = [
       ...this.flatTree.slice(0, currentIndex),
       ...newFlatSubTree,
-      ...this.flatTree.slice(currentIndex + 1 + childrenInBranch),
+      ...this.flatTree.slice(currentIndex + 1 + childrenInBranch), // remove current row along with its children.
     ];
     return { fieldIdToFocus: this.flatTree[currentIndex - 1].id, fieldIndex: currentIndex - 1 };
   };
@@ -398,6 +382,16 @@ class SchemaTreeBase implements ISchemaTree {
     };
   };
 
+  /**
+   * Updating a field could be changing the 'name' or the 'type'.
+   *
+   * Updating 'name' is pretty straight forward and involves no complicated steps.
+   * Updating 'type' involves changing from a simple type to a complex type or vice-versa.
+   *
+   * This again involves addition or removal of nodes in the schema.
+   * @param currentIndex index of the current row to be updated.
+   * @param onChangePayload - { property, value } - payload for updating.
+   */
   private update = (
     currentIndex: number,
     { property, value }: Partial<IOnChangePayload>
@@ -409,10 +403,13 @@ class SchemaTreeBase implements ISchemaTree {
     const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
     result = this.updateTree(this.schemaTree, idObj, { property, value });
     this.schemaTree = result.tree;
+    // If user changed a complex type to a simple type or to another comples type we need
+    // to remove the complex type children first
     this.flatTree = [
       ...this.flatTree.slice(0, currentIndex),
       ...this.flatTree.slice(currentIndex + result.childrenCount + (!result.newTree ? 0 : 1)),
     ];
+    // And then add the newly updated complex type children to the flattened array.
     if (result.newTree) {
       newFlatSubTree = FlatSchema(result.newTree, this.options, matchingEntry.ancestors);
       this.flatTree = [
@@ -428,26 +425,11 @@ class SchemaTreeBase implements ISchemaTree {
     return {};
   };
 
-  private add = (currentIndex): IOnChangeReturnType => {
-    const matchingEntry = this.flatTree[currentIndex];
-    let result: { tree: INode; newTree: INode; currentField: INode };
-    let newFlatSubTree: IFlattenRowType[];
-    const idObj = { id: matchingEntry.id, ancestors: matchingEntry.ancestors };
-    result = this.addToTree(this.schemaTree, idObj);
-    newFlatSubTree = FlatSchema(result.newTree, this.options, matchingEntry.ancestors);
-    this.schemaTree = result.tree;
-    const currentFieldBranchCount = branchCount(result.currentField);
-    this.flatTree = [
-      ...this.flatTree.slice(0, currentIndex + currentFieldBranchCount + 1),
-      ...newFlatSubTree,
-      ...this.flatTree.slice(currentIndex + currentFieldBranchCount + 1),
-    ];
-    return {
-      fieldIdToFocus: this.flatTree[currentIndex + currentFieldBranchCount + 1].id,
-      fieldIndex: currentIndex + currentFieldBranchCount + 1,
-    };
-  };
-
+  /**
+   * This is to identify the root tree from the flattened object.
+   * @param fieldObj - id of the flattened row
+   * @param schemaTree - Tree to find the root node.
+   */
   private getFieldObjFromTree = (fieldObj, schemaTree: INode): INode => {
     if (fieldObj.id === schemaTree.id) {
       return schemaTree;
@@ -461,6 +443,11 @@ class SchemaTreeBase implements ISchemaTree {
     );
   };
 
+  /**
+   * Function to collapse/expand a tree.
+   * @param fieldId - id of the field for which the children needs to be
+   * collapsed or expanded.
+   */
   private collapse = (fieldId: IFieldIdentifier): IOnChangeReturnType => {
     const matchingIndex = this.flatTree.findIndex((row) => row.id === fieldId.id);
     const matchingEntry = this.flatTree[matchingIndex];
@@ -480,6 +467,13 @@ class SchemaTreeBase implements ISchemaTree {
     return {};
   };
 
+  /**
+   * Identify the depth of a parent node. Depth here defines all the immediate children and all
+   * the children of childrens and so on and so forth. We need to calculate this depth because
+   * we do a DFS of our tree to flatten. Now if we need to collapse a subtree we need all the children
+   * (both direct and indirect) because in a flattened array the children comes first before the sibling.
+   * @param tree - Root node to find the depth.
+   */
   private calculateNodeDepthMap = (tree: INode): number => {
     let totalDepth = 0;
     if (isObject(tree.children) && Object.keys(tree.children).length) {
@@ -495,6 +489,16 @@ class SchemaTreeBase implements ISchemaTree {
     return totalDepth;
   };
 
+  /**
+   * The generic onChange is supposed to handle all types of mutation to the schema.
+   * This onChange is the handler for any changes that happen in the schema (not to be confused with
+   * the onChange in the schemaEditor).
+   * @param currentIndex - Current row index the user is changing
+   * @param fieldId - unique id to identify every field in the schema tree.
+   * @param onChangePayload {type, property, value} - Every onchange call will have the type of
+   * change, the property and the value. The type could be 'add', 'update', 'remove' and property could be
+   * 'name' or 'typeProperties'
+   */
   public onChange = (
     currentIndex: number,
     fieldId: IFieldIdentifier,
@@ -516,11 +520,15 @@ class SchemaTreeBase implements ISchemaTree {
   };
 }
 
-const defaultOptions: ISchemaTreeOptions = {
+/**
+ * Default options for the schema manager. This as of now only has collapseAll.
+ * Will expand to restricting schema types.
+ */
+const defaultOptions: ISchemaManagerOptions = {
   collapseAll: false,
 };
 
-function SchemaTree(avroSchema, options: ISchemaTreeOptions = defaultOptions) {
+function SchemaManager(avroSchema, options: ISchemaManagerOptions = defaultOptions) {
   if (!options) {
     options = defaultOptions;
   } else {
@@ -529,9 +537,9 @@ function SchemaTree(avroSchema, options: ISchemaTreeOptions = defaultOptions) {
       ...options,
     };
   }
-  const schemaTreeInstance = new SchemaTreeBase(avroSchema, options);
+  const schemaTreeInstance = new SchemaManagerBase(avroSchema, options);
   return {
     getInstance: () => schemaTreeInstance,
   };
 }
-export { SchemaTree, INode, ISchemaTree, IOnChangeReturnType, ISchemaTreeOptions };
+export { SchemaManager, INode, ISchemaManager, IOnChangeReturnType, ISchemaManagerOptions };

@@ -18,11 +18,11 @@ import * as React from 'react';
 import withStyles, { WithStyles, StyleRules } from '@material-ui/styles/withStyles';
 import ThemeWrapper from 'components/ThemeWrapper';
 import {
-  SchemaTree,
+  SchemaManager,
   INode,
-  ISchemaTree,
+  ISchemaManager,
   IOnChangeReturnType,
-} from 'components/AbstractWidget/SchemaEditor/Context/SchemaTree';
+} from 'components/AbstractWidget/SchemaEditor/Context/SchemaManager';
 import { ISchemaType } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 import {
   IFlattenRowType,
@@ -59,11 +59,11 @@ interface ISchemaEditorState {
 }
 
 class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorState> {
-  private schema: ISchemaTree = null;
+  private schema: ISchemaManager = null;
   constructor(props) {
     super(props);
     const { options } = props;
-    this.schema = SchemaTree(this.props.schema, options).getInstance();
+    this.schema = SchemaManager(this.props.schema, options).getInstance();
     this.state = {
       flat: this.schema.getFlatSchema(),
       tree: this.schema.getSchemaTree(),
@@ -71,7 +71,7 @@ class SchemaEditor extends React.Component<ISchemaEditorProps, ISchemaEditorStat
   }
 
   public componentWillReceiveProps(nextProps) {
-    this.schema = SchemaTree(nextProps.schema).getInstance();
+    this.schema = SchemaManager(nextProps.schema).getInstance();
     this.setState({
       flat: this.schema.getFlatSchema(),
       tree: this.schema.getSchemaTree(),

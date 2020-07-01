@@ -22,7 +22,7 @@ import {
 } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
 import { FieldRow } from 'components/AbstractWidget/SchemaEditor/FieldsList/FieldRow';
 import { SiblingCommunicationProvider } from 'components/AbstractWidget/SchemaEditor/FieldWrapper/SiblingCommunicationContext';
-import { IOnChangeReturnType } from 'components/AbstractWidget/SchemaEditor/Context/SchemaTree';
+import { IOnChangeReturnType } from 'components/AbstractWidget/SchemaEditor/Context/SchemaManager';
 import VirtualScroll from 'components/VirtualScroll';
 import { SchemaValidatorConsumer } from 'components/AbstractWidget/SchemaEditor/SchemaValidator';
 

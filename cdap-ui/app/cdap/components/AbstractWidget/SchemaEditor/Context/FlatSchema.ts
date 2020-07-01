@@ -17,12 +17,15 @@
 import isObject from 'lodash/isObject';
 import { INode } from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
 import { IFlattenRowType } from 'components/AbstractWidget/SchemaEditor/EditorTypes';
-import { ISchemaTreeOptions } from 'components/AbstractWidget/SchemaEditor/Context/SchemaTree';
+import { ISchemaManagerOptions } from 'components/AbstractWidget/SchemaEditor/Context/SchemaManager';
 import { isNilOrEmpty } from 'services/helpers';
 
+/**
+ * DFS traversal of the schema tree to flatten.
+ */
 function FlatSchemaBase(
   schemaTree: INode,
-  options: ISchemaTreeOptions,
+  options: ISchemaManagerOptions,
   ancestors = [],
   isParentCollapsed = false
 ) {
@@ -60,14 +63,22 @@ function FlatSchemaBase(
   }
   return result;
 }
-function FlatSchema(schemaTree: INode, options: ISchemaTreeOptions, ancestors = []) {
+
+/**
+ * Flatten any schema tree node (node + children) to an array.
+ * This is generic to be used on the main avro schema tree as well as any sub tree.
+ * @param schemaTree Avro schema tree to flatten
+ * @param options Options to flatten.
+ * @param ancestors Ancestors of the current tree. The main schema tree will have no ancestors.
+ */
+function FlatSchema(schemaTree: INode, options: ISchemaManagerOptions, ancestors = []) {
   const size = JSON.stringify(schemaTree).length;
   const customOptions = {
     ...options,
   };
+  // TODO: Improve the logic to determine a big schema. Even if the option says to expand/collapse all
+  // if the schema is big enough we just collapse them to prevent any performance pitfalls.
   if (size > 100000) {
-    // If the JSON is too long and if the is not default collapseAll
-    // option then collapse it.
     if (
       !isNilOrEmpty(options) ||
       !(isObject(options) && typeof options.collapseAll === 'boolean')

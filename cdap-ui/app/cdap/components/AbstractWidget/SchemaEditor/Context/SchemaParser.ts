@@ -32,6 +32,16 @@ import uuidV4 from 'uuid/v4';
 
 type ITypeProperties = Record<string, any>;
 
+/**
+ * A generic node of the tree.
+ * name, id, nullable and type - directly translate to the avro schema
+ * children - is a map of child-id and the child node. In cases like records and enums
+ * where the order of children needs to be maintained, the map will have a static
+ * 'order' array.
+ * internalType - purely used for presentation.
+ * typeProperties - Defines the properties of the type. Right now this takes in
+ * symbols in the enum and precision, scale in decimal types.
+ */
 interface INode {
   name?: string;
   children?: IOrderedChildren;

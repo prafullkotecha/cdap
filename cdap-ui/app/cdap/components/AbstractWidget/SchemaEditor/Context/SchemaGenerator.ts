@@ -20,7 +20,6 @@ import {
 } from 'components/AbstractWidget/SchemaEditor/Context/SchemaParser';
 import { ISchemaType, IEnumFieldBase } from 'components/AbstractWidget/SchemaEditor/SchemaTypes';
 import uuidV4 from 'uuid/v4';
-import cdapavsc from 'services/cdapavscwrapper';
 
 const isTypeLogical = ({ type }) => {
   switch (type) {
@@ -60,6 +59,7 @@ function generateArrayType(children: IOrderedChildren, nullable: boolean) {
       finalType.items = isArrayTypeNullable ? [childType, 'null'] : childType;
       continue;
     }
+    // nested complex types.
     const complexType = generateSchemaFromComplexType(
       childType,
       currentChild,
@@ -91,6 +91,7 @@ function generateMapType(children: IOrderedChildren, nullable) {
       }
       continue;
     }
+    // nested complex types.
     const complexType = generateSchemaFromComplexType(type, currentChild, isCurrentChildNullable);
     if (internalType === 'map-keys-complex-type-root') {
       finalType.keys = complexType as any;
@@ -117,32 +118,6 @@ function generateEnumType(children: IOrderedChildren, nullable) {
     }
   }
   return nullable ? [finalType, 'null'] : finalType;
-}
-
-function generateFieldsFromRecord(children: IOrderedChildren) {
-  const fields = [];
-  if (Array.isArray(children.order)) {
-    for (const childId of children.order) {
-      const currentChild = children[childId];
-      const { name, type, nullable: isFieldTypeNullable } = currentChild;
-      if (!name || name === '') {
-        continue;
-      }
-      const isFieldTypeComplex = isComplexType({ type });
-      if (!isFieldTypeComplex) {
-        fields.push({
-          name,
-          type: isFieldTypeNullable ? [type, 'null'] : type,
-        });
-        continue;
-      }
-      fields.push({
-        name,
-        type: generateSchemaFromComplexType(type, currentChild, isFieldTypeNullable),
-      });
-    }
-  }
-  return fields;
 }
 
 function generateRecordType(children: IOrderedChildren, nullable: boolean) {
@@ -224,6 +199,10 @@ function generateSchemaFromComplexType(type: string, currentChild, nullable: boo
   }
 }
 
+/**
+ * Utility to convert the entire schema tree to a valid avro schema JSON.
+ * @param schemaTree Schema tree to convert to avro schema JSON.
+ */
 function SchemaGenerator(schemaTree: INode) {
   const avroSchema: ISchemaType = {
     name: 'etlSchemaBody',
@@ -236,11 +215,13 @@ function SchemaGenerator(schemaTree: INode) {
   if (!schemaTree) {
     return avroSchema;
   }
+  // Top level record fields.
   const { order } = schemaTree.children;
   if (Array.isArray(order)) {
     for (const id of order) {
       const currentField = schemaTree.children[id];
       const { name, type, nullable } = currentField;
+      // Skip the newly added rows.
       if (!name || name === '') {
         continue;
       }
