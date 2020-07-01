@@ -22,9 +22,7 @@ import LoadingSVGCentered from 'components/LoadingSVGCentered';
 import If from 'components/If';
 import FileDnD from 'components/FileDnD';
 import { Button } from '@material-ui/core';
-
-const defaultSchema = require('./data/schema2.json');
-const emptyScchema = {
+const emptySchema = {
   name: 'etlSchemaBody',
   schema: {
     type: 'record',
@@ -67,9 +65,9 @@ class SchemaEditorDemoBase extends React.Component<ISchemaEditorDemoBaseProps> {
     loading: false,
     file: {},
     error: null,
-    schema: defaultSchema,
+    schema: emptySchema,
   };
-  public modifiedSchema = defaultSchema;
+  public modifiedSchema = emptySchema;
   public onDropHandler = (e) => {
     const reader = new FileReader();
     reader.onload = (evt) => {
@@ -112,7 +110,7 @@ class SchemaEditorDemoBase extends React.Component<ISchemaEditorDemoBaseProps> {
       loading: false,
       file: {},
       error: null,
-      schema: emptyScchema,
+      schema: emptySchema,
     });
   };
 
