@@ -32,7 +32,7 @@
   <packaging>jar</packaging>
 
   <properties>
-    <sdk.hadoop.version>2.8.0</sdk.hadoop.version>
+    <sdk.hadoop.version>3.4.0</sdk.hadoop.version>
   </properties>
 
   <dependencies>
@@ -287,7 +287,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.8.8</version>
+      <version>2.12.7.1</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
